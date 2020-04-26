@@ -1,9 +1,9 @@
 package com.marionete.magicsquare
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest._
 import breeze.linalg._
 
-class MagicSquareTest extends WordSpec with Matchers {
+class MagicSquareTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
   "A new MagicSquare" when {
     "chromosome Seq(1)" should {
       "be m == ((1))" in {

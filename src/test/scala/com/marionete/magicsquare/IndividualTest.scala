@@ -1,9 +1,9 @@
 package com.marionete.magicsquare
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest._
 import scala.util.Random
 
-class IndividualTest extends WordSpec with Matchers {
+class IndividualTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
   "A new Individal " when {
     "chromosome size is 1" should {
       "be Individual.chromosome == Seq(0)" in {

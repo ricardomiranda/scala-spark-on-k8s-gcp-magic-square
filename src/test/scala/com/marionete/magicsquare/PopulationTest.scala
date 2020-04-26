@@ -4,7 +4,7 @@ import org.scalatest._
 import scala.util.Random
 import org.apache.spark.sql.SparkSession
 
-class PopulationTest extends WordSpec with Matchers {
+class PopulationTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
   "A new Population" when {
     "of size 1 with Individual chromosome size 1" should {
       "the chromosome of the lonesome individual == Seq(0)" in {
