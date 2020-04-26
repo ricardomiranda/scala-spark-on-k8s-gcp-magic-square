@@ -29,3 +29,5 @@ project/plugins/project/
 
 # Metals
 .metals
+.bloop/
+
