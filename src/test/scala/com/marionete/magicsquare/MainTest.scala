@@ -1,5 +1,5 @@
 package com.marionete.magicsquare
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest._
 
-class MainTest extends WordSpec with Matchers
+class MainTest extends wordspec.AnyWordSpec with matchers.should.Matchers

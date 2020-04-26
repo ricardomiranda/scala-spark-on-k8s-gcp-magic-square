@@ -1,9 +1,9 @@
 package com.marionete.magicsquare
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest._
 import scala.util.Random
 
-class IndividualTest extends WordSpec with Matchers {
+class IndividualTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
   "A new Individal " when {
     "chromosome size is 1" should {
       "be Individual.chromosome == Seq(0)" in {
@@ -57,21 +57,33 @@ class IndividualTest extends WordSpec with Matchers {
   }
 
   "Two existing Individals" when {
-    "whith chromosomes Seq(1,2,3,4) and Seq(5,6,7,8) and crossover = 0.0" should {
+    "whith chromosomes Seq(1,2,3,4) and Seq(1,2,3,4) and crossover = 0.0" should {
       "produce Seq(1,2,3,4)" in {
-        Individual(Seq(1,2,3,4)).crossover(Individual(Seq(5,6,7,8)), 0.0, new Random(0)).chromosome should contain theSameElementsInOrderAs(Vector(1,2,3,4))
+        val actual: Seq[Long] =
+          Individual(Seq(1,2,3,4))
+            .crossover(Individual(Seq(1,2,3,4)), 0.0, new Random(0))
+            .chromosome
+        actual should contain theSameElementsAs(Vector(1,2,3,4))
       }
     }
 
     "whith chromosomes Seq(1,2,3,4) and Seq(1,2,3,4) and crossover 1.0" should {
       "produce Seq(1,2,3,4)" in {
-        Individual(Seq(1,2,3,4)).crossover(Individual(Seq(1,2,3,4)), 1.0, new Random(0)).chromosome should contain theSameElementsInOrderAs(Vector(1,2,3,4))
+        val actual: Seq[Long] =
+          Individual(Seq(1,2,3,4))
+            .crossover(Individual(Seq(1,2,3,4)), 1.0, new Random(0))
+            .chromosome
+        actual should contain theSameElementsInOrderAs(Vector(1,2,3,4))
       }
     }
 
     "whith chromosomes Seq(1,2,3,4) and Seq(4,3,2,1) and crossover 1.0" should {
       "produce Seq(1,2,3,4)" in {
-        Individual(Seq(1,2,3,4)).crossover(Individual(Seq(4,3,2,1)), 1.0, new Random(0)).chromosome should contain theSameElementsInOrderAs(Vector(4,2,3,1))
+        val actual: Seq[Long] =
+          Individual(Seq(1,2,3,4))
+            .crossover(Individual(Seq(4,3,2,1)), 1.0, new Random(0))
+            .chromosome 
+        actual should contain theSameElementsInOrderAs(Vector(1,2,3,4))
       }
     }
   }
