@@ -1,4 +1,4 @@
-package com.marionete.magicsquare
+package com.ricardomiranda.magicsquare
 
 import scala.util.Random
 import org.apache.spark.sql.SparkSession

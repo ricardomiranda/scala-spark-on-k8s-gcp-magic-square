@@ -1,4 +1,4 @@
-package com.marionete.magicsquare
+package com.ricardomiranda.magicsquare
 
 import breeze.linalg._
 import breeze.numerics._
