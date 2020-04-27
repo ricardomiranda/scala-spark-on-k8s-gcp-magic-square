@@ -22,10 +22,19 @@ lazy val dependencies = Seq(
   "org.scalanlp" %% "breeze-natives" % "1.0",
 
   // https://mvnrepository.com/artifact/org.apache.spark/spark-core
-  "org.apache.spark" %% "spark-core" % "3.0.0-preview2",
+  "org.apache.spark" %% "spark-core" % "3.0.0-preview2" % Provided,
 
   // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
-  "org.apache.spark" %% "spark-sql" % "3.0.0-preview2"
+  "org.apache.spark" %% "spark-sql" % "3.0.0-preview2" % Provided,
+
+  // https://mvnrepository.com/artifact/com.typesafe.scala-logging/scala-logging
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+
+  // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+  "ch.qos.logback" % "logback-classic" % "1.3.0-alpha5",
+
+  // https://mvnrepository.com/artifact/com.github.scopt/scopt
+  "com.github.scopt" %% "scopt" % "4.0.0-RC2"
 )
 
 lazy val root = (project in file("."))

@@ -5,7 +5,7 @@
 This program solves a magic square puzzle using genetic Programming. 
 From the wikipedia, lets see what is what is a magic square:
 
-In recreational mathematics, a magic square is an arrangement of 
+> In recreational mathematics, a magic square is an arrangement of 
 distinct numbers (i.e., each number is used once), usually integers, 
 in a square grid, where the numbers in each row, and in each column, 
 and the numbers in the main and secondary diagonals, all add up 
@@ -24,7 +24,7 @@ sometimes used to refer to any of various types of word squares.)
 * This is a simple GP example complete with tests and the most 
 ideomatic Scala
 * This is a Scala Spark program that runs in Kubernetes, using 
-GCS (Google Cloud Storage) for peersistence.
+GCS (Google Cloud Storage) for persistence
 
 ### How do I get set up? ###
 

@@ -1,4 +1,4 @@
-package com.marionete.magicsquare
+package com.ricardomiranda.magicsquare
 
 import org.scalatest._
 import scala.util.Random
