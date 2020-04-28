@@ -12,6 +12,11 @@ import org.apache.spark.sql.SparkSession
 import scala.annotation.tailrec
 import scala.util.Random
 
+case class Result(lineNbr: Int,
+                  bestIndividualNbr: Int, 
+                  newGenerationPopulationFitness: Double, 
+                  newGenerationIndividualsCount: Int,
+                  bestIndividualChromosome: Option[Seq[Long]])
 object Main extends App with StrictLogging {
 
     val iter = args(0).toInt
@@ -61,8 +66,10 @@ object Main extends App with StrictLogging {
   }
 
   @tailrec
-  def loop(n: Int, iterToGo: Int, population: Population, acc: Seq[(Int, Int, Double, Int, Option[Seq[Long]])]): 
-  Seq[(Int, Int, Double, Int, Option[Seq[Long]])] = iterToGo match {
+  def loop(n: Int, 
+           iterToGo: Int, 
+           population: Population, 
+           acc: Seq[Result]): Seq[Result] = iterToGo match {
   // n -> curent iteration, iterToGo -> remaining iterations,
   // population -> current population,
   // acc -> Seq[(n, bestFitness, fitnessPopulation, PopulationSize, Option[chromosome])]
@@ -82,18 +89,21 @@ object Main extends App with StrictLogging {
         case bestFitness => (bestFitness, None) 
       }
 
-      val result = (n,
-                    bestIndividual._1, 
-                    newGeneration.populationFitness(percentile), 
-                    newGeneration.individuals.count.toInt,
-                    bestIndividual._2 match {
-                        case Some(bi) => Some(bi.chromosome)
-			                  case None => None
-                      }
-                    )
+      val result: Result = 
+        Result(
+          lineNbr = n,
+          bestIndividualNbr = bestIndividual._1, 
+          newGenerationPopulationFitness = newGeneration.populationFitness(percentile), 
+          newGenerationIndividualsCount = newGeneration.individuals.count.toInt,
+          bestIndividualChromosome = 
+            bestIndividual._2 match {
+              case Some(bi) => Some(bi.chromosome)
+			        case None => None
+            }
+          )
 
 	    val percent = 100.0 - n.toDouble/iter.toDouble*100.0
-    	if (n % output == 0) println(s"Remainig: ${percent}%, best individual: ${bestIndividual._1}, population size = ${population.individuals.count}") 
+    	if (n % output == 0) logger.info(s"Remainig: ${percent}%, best individual: ${bestIndividual._1}, population size = ${population.individuals.count}") 
 
       loop(n+1, 
            if (bestIndividual._1 == 0) { 0 } else { iterToGo-1 }, 
@@ -132,31 +142,31 @@ object Main extends App with StrictLogging {
   logger.info(MagicSquare(iniPopulation.individuals.sortByKey().first._2.chromosome).m.toString)
   logger.info(s"With fitness: ${iniPopulation.individuals.sortByKey().first._1}")
 
-  val result = loop(0, iter, iniPopulation, Seq())
+  val result: Seq[Result] = loop(0, iter, iniPopulation, Seq())
 
   logger.info("Solution is:")
 
-  result.head._5 match {
+  result.head.bestIndividualChromosome match {
     case Some(chromosome) => logger.info(MagicSquare(chromosome).m.toString)
     case _ =>
   }
 
-  logger.info(s"With fitness: ${result.head._2}")
+  logger.info(s"With fitness: ${result.head.bestIndividualNbr}")
 
   val fig = Figure()
   val plt = fig.subplot(0)
-  plt += plot(result.map(_._1), result.map(_._2), name="Best individual")
-  plt += plot(result.map(_._1), result.map(_._3.toInt), name="Population")
+  plt += plot(result.map( x => x.lineNbr ), result.map( x => x.bestIndividualNbr ), name="Best individual")
+  plt += plot(result.map( x => x.lineNbr ), result.map( x => x.newGenerationPopulationFitness.toInt), name="Population")
   plt.xlabel = "Iterations"
   plt.ylabel = "Fitness"
   plt.title = s"Magic square with size $sideSize fitness"
   plt.legend = true
   fig.refresh()
 
-  println("Program terminated")
+  logger.info("Program terminated")
   val t0 = System.nanoTime()
   val t1 = System.nanoTime()
-  println("Elapsed time: " + (t1 - t0) + "ns")
+  logger.info("Elapsed time: " + (t1 - t0) + "ns")
 
   sparkSession.stop()
 }
