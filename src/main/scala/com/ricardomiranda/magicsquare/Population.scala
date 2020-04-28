@@ -12,7 +12,7 @@ case class Population(individuals: RDD[(Int, Individual)], spark: SparkSession) 
     val percentilePop = (percentile*this.individuals.count).toInt
     this.individuals
         .takeOrdered(percentilePop)
-	.map{ case (k,_) => k }
+	      .map{ case (k,_) => k }
         .sum.toDouble / percentilePop.toDouble
   }
 
@@ -58,7 +58,7 @@ object Population {
     def individuals(i: Long, list: Seq[Individual]): Seq[Individual] = 
       i match {
         case 0 => list
-	case _ => individuals(i-1, Individual(chromosomeSize, r) +: list)
+      	case _ => individuals(i-1, Individual(chromosomeSize, r) +: list)
     }
     val individualsRDD =
       spark.sparkContext.parallelize((1 to populationSize).map(_ => (-1, Individual(chromosomeSize, r))))
