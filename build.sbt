@@ -34,7 +34,10 @@ lazy val dependencies = Seq(
   "ch.qos.logback" % "logback-classic" % "1.3.0-alpha5",
 
   // https://mvnrepository.com/artifact/com.github.scopt/scopt
-  "com.github.scopt" %% "scopt" % "4.0.0-RC2"
+  "com.github.scopt" %% "scopt" % "4.0.0-RC2",
+
+  // https://mvnrepository.com/artifact/io.spray/spray-json
+  "io.spray" %% "spray-json" % "1.3.5"
 )
 
 lazy val root = (project in file("."))
