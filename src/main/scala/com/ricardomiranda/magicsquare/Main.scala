@@ -100,18 +100,8 @@ object Main extends App with StrictLogging {
     case Some(chromosome) => logger.info(MagicSquare(chromosome).m.toString)
     case _ =>
   }
-
-  logger.info(s"With fitness: ${result.head.fitness}")
-
-  val fig = Figure()
-  val plt = fig.subplot(0)
-  plt += plot(result.map( x => x.lineNbr ), result.map( x => x.fitness ), name="Best individual")
-  plt += plot(result.map( x => x.lineNbr ), result.map( x => x.newGenerationPopulationFitness.toInt), name="Population")
-  plt.xlabel = "Iterations"
-  plt.ylabel = "Fitness"
-  plt.title = s"Magic square with size ${magicSquareConfigs.sideSize} fitness"
-  plt.legend = true
-  fig.refresh()
+  
+  Computation.finalOutput(result = result, sideSize = magicSquareConfigs.sideSize)
 
   logger.info("Program terminated")
   val t0 = System.nanoTime()
@@ -182,4 +172,19 @@ case object Computation extends StrictLogging {
            magicSquareConfigs)
   }
 
+  def finalOutput(result: Seq[Result], sideSize: Int): Unit = {
+    logger.info(s"With fitness: ${result.head.fitness}")
+
+    val fig = Figure()
+    val plt = fig.subplot(0)
+    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.fitness ), name="Best individual")
+    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.newGenerationPopulationFitness.toInt), name="Population")
+    plt.xlabel = "Iterations"
+    plt.ylabel = "Fitness"
+    plt.title = s"Magic square with size ${sideSize} fitness"
+    plt.legend = true
+    fig.refresh()
+
+
+  }
 }
