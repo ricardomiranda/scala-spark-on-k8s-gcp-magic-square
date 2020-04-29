@@ -20,41 +20,6 @@ case class Result(lineNbr: Int,
 
 object Main extends App with StrictLogging {
 
-  /** Creates a spark session using the provided configurations.
-    * Should the configurations be empty, the default spark session will be returned.
-    *
-    * @param configs provided configurations.
-    * @return a configured spark session.
-    */
-  def createSparkSession(configs: Map[String, String], sparkAppName: String): SparkSession = {
-    logger.info(s"Creating Spark Session with name $sparkAppName")
-    val builder =
-      SparkSession
-        .builder()
-        .appName(sparkAppName)
-
-    Some(configs.foldLeft(builder)((accum, x) => accum.config(x._1, x._2)))
-      .getOrElse(builder)
-      .getOrCreate()
-  }
-  
-  /** Method to add a file to the Spark session.
-    *
-    * @param filePath     The filepath to the file to add.
-    * @param sparkSession The Spark session of the application.
-    * @return The file path of the file in the Spark session.
-    */
-  def addFileToSparkContext(filePath: String, sparkSession: SparkSession): String = {
-    logger.info(s"Add file ${filePath} to Spark Session")
-    sparkSession.sparkContext.addFile(filePath)
-
-    val filePathBasename: String =
-      Seq(
-        FilenameUtils.getBaseName(filePath),
-        FilenameUtils.getExtension(filePath)).mkString(".")
-
-    SparkFiles.get(filePathBasename)
-  }
 
   val arguments: ArgumentParser = ArgumentParser.parser.parse(args, ArgumentParser()) match {
     case Some(config) => config
@@ -63,17 +28,18 @@ object Main extends App with StrictLogging {
 
   logger.info("All input arguments were correctly parsed")
 
-  val sparkSession: SparkSession = createSparkSession(
+  val sparkSession: SparkSession = Computation.createSparkSession(
     configs = arguments.configs,
     sparkAppName = arguments.sparkAppName
   )
 
   sparkSession.sparkContext.setLogLevel("INFO")
 
-  val magicSquareConfigurationFilePath: String = addFileToSparkContext(
-    filePath = arguments.magicSquareConfigurationFile,
-    sparkSession = sparkSession
-  )
+  val magicSquareConfigurationFilePath: String = 
+    Computation.addFileToSparkContext(
+      filePath = arguments.magicSquareConfigurationFile,
+      sparkSession = sparkSession
+    )
 
   val magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration =
     MagicSquareJsonSupport
@@ -82,8 +48,7 @@ object Main extends App with StrictLogging {
   val iniPopulation = 
     Population(
       populationSize = magicSquareConfigs.popSize,
-      chromosomeSize = 
-        (magicSquareConfigs.sideSize * magicSquareConfigs.sideSize).toLong,
+      chromosomeSize = (magicSquareConfigs.sideSize * magicSquareConfigs.sideSize).toLong,
       r = new Random(),
       spark = sparkSession
     ).calcFitness
@@ -112,8 +77,68 @@ object Main extends App with StrictLogging {
 }
 
 case object Computation extends StrictLogging {
+    
+  /** 
+    * Method to add a file to the Spark session.
+    *
+    * @param filePath     The filepath to the file to add.
+    * @param sparkSession The Spark session of the application.
+    * @return The file path of the file in the Spark session.
+    */
+  def addFileToSparkContext(filePath: String, sparkSession: SparkSession): String = {
+    logger.info(s"Add file ${filePath} to Spark Session")
+    sparkSession.sparkContext.addFile(filePath)
 
-  /** This the main program loop
+    val filePathBasename: String =
+      Seq(
+        FilenameUtils.getBaseName(filePath),
+        FilenameUtils.getExtension(filePath)).mkString(".")
+
+    SparkFiles.get(filePathBasename)
+  }
+
+  /**
+    * Creates a spark session using the provided configurations.
+    * Should the configurations be empty, the default spark session will be returned.
+    *
+    * @param configs provided configurations.
+    * @return a configured spark session.
+    */
+  def createSparkSession(configs: Map[String, String], sparkAppName: String): SparkSession = {
+    logger.info(s"Creating Spark Session with name $sparkAppName")
+    val builder =
+      SparkSession
+        .builder()
+        .appName(sparkAppName)
+
+    Some(configs.foldLeft(builder)((accum, x) => accum.config(x._1, x._2)))
+      .getOrElse(builder)
+      .getOrCreate()
+  }
+ 
+  /**
+    * Print final program results
+    *
+    * @param result   Sequence o Results stroed during the computation
+    * @param sideSize Magic square side size
+    */
+  
+  def finalOutput(result: Seq[Result], sideSize: Int): Unit = {
+    logger.info(s"With fitness: ${result.head.fitness}")
+
+    val fig = Figure()
+    val plt = fig.subplot(0)
+    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.fitness ), name="Best individual")
+    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.newGenerationPopulationFitness.toInt), name="Population")
+    plt.xlabel = "Iterations"
+    plt.ylabel = "Fitness"
+    plt.title = s"Magic square with size ${sideSize} fitness"
+    plt.legend = true
+    fig.refresh()
+  }
+
+  /** 
+    * This the main program loop
     *
     * @param n          curent iteration
     * @param iterToGo   remaining iterations
@@ -126,8 +151,8 @@ case object Computation extends StrictLogging {
            iterToGo: Int, 
            population: Population, 
            acc: Seq[Result],
-           magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration
-  ): Seq[Result] = iterToGo match {
+           magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration)
+  : Seq[Result] = iterToGo match {
 
     case 0 => acc
     case _ =>
@@ -170,21 +195,5 @@ case object Computation extends StrictLogging {
            newGeneration, 
            result+:acc,
            magicSquareConfigs)
-  }
-
-  def finalOutput(result: Seq[Result], sideSize: Int): Unit = {
-    logger.info(s"With fitness: ${result.head.fitness}")
-
-    val fig = Figure()
-    val plt = fig.subplot(0)
-    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.fitness ), name="Best individual")
-    plt += plot(result.map( x => x.lineNbr ), result.map( x => x.newGenerationPopulationFitness.toInt), name="Population")
-    plt.xlabel = "Iterations"
-    plt.ylabel = "Fitness"
-    plt.title = s"Magic square with size ${sideSize} fitness"
-    plt.legend = true
-    fig.refresh()
-
-
   }
 }
