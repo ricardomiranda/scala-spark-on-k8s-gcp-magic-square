@@ -3,23 +3,35 @@ package com.ricardomiranda.magicsquare
 import org.scalatest._
 import breeze.linalg._
 
-class MagicSquareTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
-  "A new MagicSquare" when {
+class MagicSquareTest
+    extends wordspec.AnyWordSpec
+    with matchers.should.Matchers {
+  "A DenseMatrix" when {
     "chromosome Seq(1)" should {
-      "be m == ((1))" in {
-        MagicSquare(Seq(1L)).m shouldBe DenseMatrix((1))
+      "be matrix == ((1))" in {
+        val c: Option[Chromosome] = Chromosome(Seq(1L))
+        MagicSquare.matrix(c.get) shouldBe Some(DenseMatrix((1)))
       }
     }
 
     "chromosome Seq(1,2,3,4)" should {
-      "be m == ((1,2),(3,4))" in {
-        MagicSquare(Seq(1L,2L,3L,4L)).m shouldBe DenseMatrix((1,2),(3,4))
+      "be matrix == ((1,2),(3,4))" in {
+        val c: Option[Chromosome] = Chromosome(Seq(1L, 2L, 3L, 4L))
+        MagicSquare.matrix(c.get) shouldBe Some(DenseMatrix((1, 2), (3, 4)))
       }
     }
 
     "chromosome Seq(1,2,3,4,5,6,7,8,9)" should {
-      "be m == ((1,2,3),(4,5,6),(7,8,9))" in {
-        MagicSquare(Seq(1L,2L,3L,4L,5L,6L,7L,8L,9L)).m shouldBe DenseMatrix((1,2,3),(4,5,6),(7,8,9))
+      "be matrix == ((1,2,3),(4,5,6),(7,8,9))" in {
+        val c: Option[Chromosome] =
+          Chromosome(Seq(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L))
+        MagicSquare.matrix(c.get) shouldBe Some(
+          DenseMatrix(
+            (1, 2, 3),
+            (4, 5, 6),
+            (7, 8, 9)
+          )
+        )
       }
     }
   }
@@ -27,19 +39,22 @@ class MagicSquareTest extends wordspec.AnyWordSpec with matchers.should.Matchers
   "Calculating the fitness of a MagicSquare" when {
     "chromosome Seq(1)" should {
       "be fitness == 0" in {
-        MagicSquare(Seq(1L)).squareDiferences shouldBe 0
+        val c: Option[Chromosome] = Chromosome(Seq(1L))
+        MagicSquare.squareDiferences(chromosome = c.get) shouldBe Some(0)
       }
     }
 
     "chromosome Seq(1,2,3,4)" should {
       "be fitness == 0" in {
-        MagicSquare(Seq(1L,2L,3L,4L)).squareDiferences shouldBe 33
+        val c: Option[Chromosome] = Chromosome(Seq(1L, 2L, 3L, 4L))
+        MagicSquare.squareDiferences(chromosome = c.get) shouldBe Some(33)
       }
     }
 
     "chromosome Seq(1,1,1,1)" should {
       "be fitness == 0" in {
-        MagicSquare(Seq(1L,1L,1L,1L)).squareDiferences shouldBe 0
+        val c: Option[Chromosome] = Chromosome(Seq(1L, 1L, 1L, 1L))
+        MagicSquare.squareDiferences(chromosome = c.get) shouldBe Some(0)
       }
     }
   }
