@@ -4,48 +4,51 @@ import breeze.linalg._
 import breeze.numerics._
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 object MagicSquare {
 
   /**
-    * Returns a denseMatrix from a Chromosome, requires a non zero length
-    * Chromosome
+    * Returns a denseMatrix from a Chromosome, requires a Chromosome with a
+    * size suitable to be turned into a square
     *
     * @param chromosome A Chromosome
     * @return Option[DenseMatrix]
     */
-  def matrix(c: Chromosome): Option[DenseMatrix[Long]] = c match {
-    case c if c.value != Seq.empty =>
-      val n: Int = sqrt(c.value.size).toInt
-      Some(DenseMatrix(c.value.grouped(n).toSeq: _*))
-    case _ => None
+  def matrix(chromosome: Chromosome): Option[DenseMatrix[Long]] = {
+    Try {
+      val n: Int = sqrt(chromosome.value.size).toInt
+      DenseMatrix(chromosome.value.grouped(n).toSeq: _*)
+    }.toOption
   }
 
   /**
     * This computation is the fitness of a Individual
     *
+    * @param chromosome A Chromosome
     * @return Option[Fitness]
     */
   def squareDiferences(chromosome: Chromosome): Option[Long] =
     MagicSquare.matrix(chromosome) match {
 
       case Some(matrix) =>
-        val sqr: Long => Long = x => x * x
+        Try {
+          val sqr: Long => Long = x => x * x
 
-        def lines: Seq[Long] = {
-          Seq(trace(matrix), trace(matrix(*, ::).map(reverse(_)))) ++ (sum(
-            matrix(*, ::)
-          )).toArray.toSeq ++ (sum(matrix(::, *))).t.toArray.toSeq
-        }
+          def lines: Seq[Long] = {
+            Seq(trace(matrix), trace(matrix(*, ::).map(reverse(_)))) ++ (sum(
+              matrix(*, ::)
+            )).toArray.toSeq ++ (sum(matrix(::, *))).t.toArray.toSeq
+          }
 
-        @tailrec
-        def loop(xs: Seq[Long], acc: Long): Long = xs match {
-          case Seq(x)       => acc
-          case x :: y :: xs => loop(y :: xs, acc + sqr(x - y))
-        }
+          @tailrec
+          def loop(xs: Seq[Long], acc: Long): Long = xs match {
+            case Seq(x)       => acc
+            case x :: y :: xs => loop(y :: xs, acc + sqr(x - y))
+          }
 
-        Some(loop(lines, 0))
-
+          loop(lines, 0)
+        }.toOption
       case None => None
     }
 }
