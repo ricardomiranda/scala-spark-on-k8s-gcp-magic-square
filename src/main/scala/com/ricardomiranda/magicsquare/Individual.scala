@@ -2,7 +2,6 @@ package com.ricardomiranda.magicsquare
 
 import scala.util.Random
 import scala.math.Ordered.orderingToOrdered
-import org.apache.spark.sql.catalyst.expressions.In
 import com.typesafe.scalalogging.StrictLogging
 
 case class Individual(chromosome: Chromosome, fitness: Long) {
