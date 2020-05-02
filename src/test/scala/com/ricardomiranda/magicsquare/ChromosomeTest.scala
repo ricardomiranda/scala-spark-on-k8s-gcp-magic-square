@@ -1,10 +1,11 @@
 package com.ricardomiranda.magicsquare
 
-
 import org.scalatest._
 import breeze.linalg._
 
-class ChromosomeTest extends wordspec.AnyWordSpec with matchers.should.Matchers {
+class ChromosomeTest
+    extends wordspec.AnyWordSpec
+    with matchers.should.Matchers {
   "A Chromosome" when {
     "Constructed with Seq()" should {
       "be with None" in {

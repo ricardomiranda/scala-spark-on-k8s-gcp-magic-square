@@ -13,10 +13,10 @@ case class Chromosome(value: Seq[Long]) extends StrictLogging {
     * @return Modified Chromosome
     */
   def modify(gene: Long, pos: Int): Chromosome = pos match {
-    case pos if 0 to (this.value.size -1) contains pos =>
+    case pos if 0 to (this.value.size - 1) contains pos =>
       logger.debug(s"Chromosome modifying gene: ${gene} in position: ${pos}")
       this.copy(value = this.value.updated(pos, gene))
-      case _ => this
+    case _ => this
   }
 }
 
