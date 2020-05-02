@@ -89,7 +89,7 @@ object Individual extends StrictLogging {
     * Individual's constructor providing the Chromosome
     *
     * @param chromosome Chromosome
-    * @return New Individual
+    * @return Option[Individual]
     */
   def apply(chromosome: Chromosome): Option[Individual] =
     MagicSquare.squareDiferences(chromosome = chromosome) match {
@@ -106,7 +106,7 @@ object Individual extends StrictLogging {
     *
     * @param chromosomeSize  Chromosome size
     * @param randomGenerator Random generator
-    * @return New Individual
+    * @return Option[Individual]
     */
   def apply(
       chromosomeSize: Long,

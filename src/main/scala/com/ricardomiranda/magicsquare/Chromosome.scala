@@ -21,6 +21,13 @@ case class Chromosome(value: Seq[Long]) extends StrictLogging {
 }
 
 object Chromosome {
+
+  /**
+    * Constuctor for Chromosome, returns an Option
+    *
+    * @param value The Chromosome sequence of genes
+    * @return Option[Chromosome]
+    */
   def apply(value: Seq[Long]): Option[Chromosome] = value match {
     case Nil => None
     case xs  => Some(new Chromosome(value))
