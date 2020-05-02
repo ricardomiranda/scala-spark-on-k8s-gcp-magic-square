@@ -2,7 +2,6 @@ package com.ricardomiranda.magicsquare
 
 import scala.util.Random
 import scala.math.Ordered.orderingToOrdered
-import checkers.units.quals.C
 import org.apache.spark.sql.catalyst.expressions.In
 import com.typesafe.scalalogging.StrictLogging
 
