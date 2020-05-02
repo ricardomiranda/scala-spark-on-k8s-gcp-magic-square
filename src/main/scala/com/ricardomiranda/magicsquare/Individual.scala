@@ -29,7 +29,7 @@ case class Individual(chromosome: Chromosome, fitness: Long) {
             .modify(gene = this.chromosome.value(pos2), pos = pos1)
             .modify(gene = this.chromosome.value(pos1), pos = pos2)
 
-        Individual(chromosome = c)
+        Individual(chromosome = c).get
     }
 
 //   /**
@@ -91,13 +91,15 @@ object Individual extends StrictLogging {
     * @param chromosome Chromosome
     * @return New Individual
     */
-  def apply(chromosome: Chromosome): Individual = {
-    val f: Long = MagicSquare.squareDiferences(chromosome = chromosome).get
-    logger.debug(
-      s"Creating individual with Chromosome: ${chromosome} and fitness: ${f}"
-    )
-    new Individual(chromosome = chromosome, fitness = f)
-  }
+  def apply(chromosome: Chromosome): Option[Individual] =
+    MagicSquare.squareDiferences(chromosome = chromosome) match {
+      case None => None
+      case Some(f) =>
+        logger.debug(
+          s"Creating individual with Chromosome: ${chromosome} and fitness: ${f}"
+        )
+        Some(new Individual(chromosome = chromosome, fitness = f))
+    }
 
   /**
     * Individual's constructor for initial porpulation
