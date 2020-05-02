@@ -1,10 +1,56 @@
 package com.ricardomiranda.magicsquare
 
 import scala.util.Random
-import scala.math.Ordered.orderingToOrdered
 import com.typesafe.scalalogging.StrictLogging
 
 case class Individual(chromosome: Chromosome, fitness: Long) {
+
+  /**
+    * With the magic square problem, both the genes and the order of the genes
+    * in the chromosome are very important. In fact, for the magic square
+    * problem we shouldn't ever have more than one copy of a specific gene in our
+    * chromosome. This is because it would create an invalid solution because a number
+    * can not be in the solution more than once. 
+    * Because of this, it's essential that we find and apply a crossover
+    * method that produces valid results for our problem.
+    * We also need to be respectful of the ordering of the parent's chromosomes
+    * during the crossover process. This is because the order of the chromosome
+    * the solution's fitness. In fact, it is only the order that matters.
+    * Here we will aply ordered crossover.
+    *
+    * @param crossoverRate   crossover rate
+    * @param other           second parent
+    * @param randomGenerator Random generator
+    * @return New Individual
+    */
+  def crossover(
+      crossoverRate: Double,
+      other: Individual,
+      randomGenerator: Random
+  ): Individual =
+    crossoverRate match {
+      case crossoverRate if randomGenerator.nextDouble() > crossoverRate =>
+        this
+      case _ =>
+        val rs: scala.collection.immutable.IndexedSeq[Int] =
+          for (i <- 1 to 2)
+            yield randomGenerator.nextInt(this.chromosome.value.size - 1)
+        val pos1: Int = rs.min
+        val pos2: Int = rs.max
+
+        val fstParentContrib: Seq[Long] =
+          this.chromosome.value.drop(pos1).take(pos2)
+        val sndParentContrib: Seq[Long] =
+          for (i <- other.chromosome.value if !fstParentContrib.contains(i))
+            yield i
+        val c: Chromosome =
+          Chromosome(
+            sndParentContrib.take(pos1) ++
+              fstParentContrib ++
+              sndParentContrib.drop(pos1)
+          ).get
+        Individual(chromosome = c).get
+    }
 
   /**Swap mutation, is an algorithm that will simply swap the genetic information at
     * two points. Swap mutation works by looping though the genes in the individual’s
@@ -31,53 +77,6 @@ case class Individual(chromosome: Chromosome, fitness: Long) {
 
         Individual(chromosome = c).get
     }
-
-//   /**
-//     * With the magic square problem, both the genes and the order of the genes
-//     * in the chromosome are very important. In fact, for the magic square
-//     * problem we shouldn't ever have more than one copy of a specific gene in our
-//     * chromosome. This is because it would create an invalid solution because a number
-//     * can not be in the solution more than once. Consider a case where we
-//     * Because of this, it's essential that we find and apply a crossover
-//     * method that produces valid results for our problem.
-//     * We also need to be respectful of the ordering of the parent's chromosomes
-//     * during the crossover process. This is because the order of the chromosome
-//     * the solution's fitness. In fact, it is only the order that matters.
-//     * Here we will aply ordered crossover.
-//     *
-//     * @param crossoverRate crossover rate
-//     * @param other         second parent
-//     * @param r             Random generator
-//     * @return New Individual
-//     */
-//   def crossover(
-//       crossoverRate: Double,
-//       other: Individual,
-//       r: Random
-//   ): Individual = crossoverRate match {
-//     case crossoverRate if r.nextDouble() < crossoverRate => this
-//     case _ =>
-//       val rs: scala.collection.immutable.IndexedSeq[Int] =
-//         for (i <- 1 to 2) yield r.nextInt(this.chromosome.value.size - 1)
-//       val pos1: Int = rs.min
-//       val pos2: Int = rs.max
-
-//       val fstParentContrib: Seq[Long] =
-//         this.chromosome.value.drop(pos1).take(pos2)
-//       val sndParentContrib: Seq[Long] =
-//         for (i <- other.chromosome.value if !fstParentContrib.contains(i))
-//           yield i
-//       val c: Chromosome =
-//         Chromosome(
-//           sndParentContrib.take(pos1) ++
-//             fstParentContrib ++
-//             sndParentContrib.drop(pos1)
-//         )
-//       Individual(
-//         chromosome = c,
-//         fitness = Individual.calcFitness(chromosome = c)
-//       )
-//   }
 }
 
 object Individual extends StrictLogging {

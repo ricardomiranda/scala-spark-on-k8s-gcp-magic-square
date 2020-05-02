@@ -107,8 +107,8 @@ class IndividualTest
       }
     }
 
-      "whith chromosome Seq(1,2,3,4,5,6,7,8,9) and mutationRate = 1.0" should {
-        "have mutation form Seq(1,2,3,4,5,6,7,8,9) to Seq(6,8,3,4,9,2,7,1,5)" in {
+    "whith chromosome Seq(1,2,3,4,5,6,7,8,9) and mutationRate = 1.0" should {
+      "have mutation form Seq(1,2,3,4,5,6,7,8,9) to Seq(6,8,3,4,9,2,7,1,5)" in {
         val c: Chromosome = Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
 
         val actual: Individual = Individual(chromosome = c).get
@@ -116,39 +116,49 @@ class IndividualTest
 
         actual.chromosome.value should contain theSameElementsInOrderAs (
             Vector(1, 5, 3, 4, 2, 6, 7, 8, 9))
-        }
+      }
+    }
+  }
+
+  "Two existing Individals" when {
+    """
+    whith chromosomes Seq(1, 2, 3, 4, 5, 6, 7, 8, 9) and 
+    Seq(9, 8, 7, 6, 5, 4, 3, 2, 1) and crossover = 0.0""" should {
+      "produce Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)" in {
+        val actual: Individual =
+          Individual(chromosome =
+            Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
+          ).get
+            .crossover(
+              crossoverRate = 0.0,
+              other = Individual(chromosome =
+                Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
+              ).get,
+              randomGenerator = new Random(0)
+            )
+        actual.chromosome.value should contain theSameElementsInOrderAs (
+            Vector(1, 2, 3, 4, 5, 6, 7, 8, 9))
       }
     }
 
-    "Two existing Individals" when {
-    //   "whith chromosomes Seq(1,2,3,4) and Seq(1,2,3,4) and crossover = 0.0" should {
-    //     "produce Seq(1,2,3,4)" in {
-    //       val actual: Seq[Long] =
-    //         Individual(Seq(1,2,3,4))
-    //           .crossover(Individual(Seq(1,2,3,4)), 0.0, new Random(0))
-    //           .chromosome
-    //       actual should contain theSameElementsAs(Vector(1,2,3,4))
-    //     }
-    //   }
-
-    //   "whith chromosomes Seq(1,2,3,4) and Seq(1,2,3,4) and crossover 1.0" should {
-    //     "produce Seq(1,2,3,4)" in {
-    //       val actual: Seq[Long] =
-    //         Individual(Seq(1,2,3,4))
-    //           .crossover(Individual(Seq(1,2,3,4)), 1.0, new Random(0))
-    //           .chromosome
-    //       actual should contain theSameElementsInOrderAs(Vector(1,2,3,4))
-    //     }
-    //   }
-
-    //   "whith chromosomes Seq(1,2,3,4) and Seq(4,3,2,1) and crossover 1.0" should {
-    //     "produce Seq(1,2,3,4)" in {
-    //       val actual: Seq[Long] =
-    //         Individual(Seq(1,2,3,4))
-    //           .crossover(Individual(Seq(4,3,2,1)), 1.0, new Random(0))
-    //           .chromosome
-    //       actual should contain theSameElementsInOrderAs(Vector(1,2,3,4))
-    //     }
-    //   }
+    """
+    whith chromosomes Seq(1, 2, 3, 4, 5, 6, 7, 8, 9) and 
+    Seq(9, 8, 7, 6, 5, 4, 3, 2, 1) and crossover 1.0"""" should {
+      "produce Seq(1,2,3,4)" in {
+        val actual: Individual =
+          Individual(chromosome =
+            Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
+          ).get
+            .crossover(
+              crossoverRate = 1.0,
+              other = Individual(chromosome =
+                Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
+              ).get,
+              randomGenerator = new Random(0)
+            )
+        actual.chromosome.value should contain theSameElementsInOrderAs (
+            Vector(9, 2, 3, 4, 5, 8, 7, 6, 1))
+      }
+    }
   }
 }
