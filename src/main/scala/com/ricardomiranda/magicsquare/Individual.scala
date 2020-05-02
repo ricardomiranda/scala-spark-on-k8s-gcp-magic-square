@@ -82,9 +82,6 @@ case class Individual(chromosome: Chromosome, fitness: Long) {
 
 object Individual extends StrictLogging {
 
-  implicit def orderingByFitness[A <: Individual]: Ordering[A] =
-    Ordering.by(_.fitness)
-
   /**
     * Individual's constructor providing the Chromosome
     *
