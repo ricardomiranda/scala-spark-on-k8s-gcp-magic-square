@@ -70,7 +70,7 @@ object ArgumentParser {
   def isRemoteAddressExists(address: String): Boolean = {
     Try {
       val cmd: Seq[String] = s"gsutil ls ${address}".split(" ").toSeq
-      cmd !
+      cmd!
     }.getOrElse(2) match {
       case 0 => true
       case _ => false
