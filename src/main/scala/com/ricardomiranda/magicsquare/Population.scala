@@ -7,7 +7,7 @@ import scala.util.Random
 import com.typesafe.scalalogging.StrictLogging
 
 case class Population(individuals: DataFrame, sparkSession: SparkSession)
-//     extends StrictLogging {
+    extends StrictLogging {
 
 //   /**
 //     * Find the fitest individual and returns its fitness
@@ -19,34 +19,51 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
 //     this.individuals.agg(min("fitness")).head.getLong(0)
 //   }
 
-//   /**
-//     * Compute a new generation
-//     *
-//     * @param c crossover rate
-//     * @param e elite
-//     * @param m mutation rate
-//     * @param t tournament size
-//     * @return
-//     */
-//   def newGeneration(c: Double, e: Int, m: Double, t: Int): Population = {
-//     val elitePopulation: DataFrame = this.individuals.orderBy(rand()).limit(e)
+  // /**
+  //   * Compute a new generation
+  //   *
+  //   * @param crossoverRate  crossover rate
+  //   * @param elite          elite
+  //   * @param mutationRate   mutation rate
+  //   * @param tournamentSize tournament size
+  //   * @return
+  //   */
+  // def newGeneration(
+  //     crossoverRate: Double,
+  //     elite: Int,
+  //     mutationRate: Double,
+  //     tournamentSize: Int
+  // ): Population = {
+  //   val elitePopulation: DataFrame = this.individuals.orderBy(rand()).limit(e)
 
-//     val offspringPopulation: DataFrame =
-//       offspring(selectParents(this.individuals.count - e, t), m, c)
+  //   val offspringPopulation: DataFrame =
+  //     offspring(
+  //       selectParents(this.individuals.count - elite, tournamentSize),
+  //       mutationRate,
+  //       crossoverRate
+  //     )
 
-//     this.copy(individuals = offspringPopulation.join(elitePopulation))
-//   }
+  //   this.copy(individuals = offspringPopulation.join(elitePopulation))
+  // }
 
-//   def populationFitness(percentile: Double): Double = {
-//     val percentilePop: Int = (percentile * this.individuals.count).toInt
-//     this.individuals
-//       .orderBy("fitness")
-//       .limit(percentilePop)
-//       .agg(sum("fitness"))
-//       .head
-//       .getLong(0) / percentilePop.toDouble
+  /**
+    * Computes Population fitness based on a percentile
+    *
+    * @param percentile Percentile of the Population to use to compute fitness
+    * @return Population fitness
+    */
+  def populationFitness(percentile: Double): Double =
+    this.individuals match {
+      case df if df.isEmpty => 0.0
+      case df =>
+        val percentilePop: Int = (percentile * df.count).toInt + 1
 
-//   }
+        df.orderBy("fitness")
+          .limit(percentilePop)
+          .agg(sum("fitness"))
+          .head
+          .getLong(0) / percentilePop.toDouble
+    }
 
 //   /** Tournament selection selects its parents by running a series of "tournaments".
 //     * First, individuals are randomly selected from the population and entered into a
@@ -104,8 +121,8 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
 //           new Random()
 //         )
 //         .mutation(mutationRate, new Random())
-//     )
-// }
+  // )
+}
 
 object Population {
 
@@ -125,14 +142,15 @@ object Population {
       sparkSession: SparkSession
   ) = {
 
-    val is:scala.collection.immutable.IndexedSeq[(Seq[Long], Long)] =
+    val is: scala.collection.immutable.IndexedSeq[(Seq[Long], Long)] =
       (1 to populationSize)
         .map(_ =>
           Individual(
             chromosomeSize = chromosomeSize,
             randomGenerator = randomGenerator
           ).get
-        ).map(i => (i.chromosome.value, i.fitness))
+        )
+        .map(i => (i.chromosome.value, i.fitness))
 
     new Population(
       individuals = sparkSession
