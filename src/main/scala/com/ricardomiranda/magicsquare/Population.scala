@@ -1,6 +1,6 @@
 package com.ricardomiranda.magicsquare
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{min, max, rand, sum}
 
 import scala.util.Random
@@ -50,37 +50,49 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * Computes Population fitness based on a percentile
     *
     * @param percentile Percentile of the Population to use to compute fitness
-    * @return Population fitness
+    * @return Option of Population fitness
     */
-  def populationFitness(percentile: Double): Double =
+  def populationFitness(percentile: Double): Option[Double] =
     this.individuals match {
-      case df if df.isEmpty => 0.0
+      case df if df.isEmpty => None
       case df =>
         val percentilePop: Int = (percentile * df.count).toInt + 1
 
-        df.orderBy("fitness")
-          .limit(percentilePop)
-          .agg(sum("fitness"))
-          .head
-          .getLong(0) / percentilePop.toDouble
+        Some(
+          df.orderBy("fitness")
+            .limit(percentilePop)
+            .agg(sum("fitness"))
+            .head
+            .getLong(0) / percentilePop.toDouble
+        )
     }
 
-//   /** Tournament selection selects its parents by running a series of "tournaments".
-//     * First, individuals are randomly selected from the population and entered into a
-//     * tournament. Next, these individuals can be thought to compete with each other
-//     * by comparing their fitness values, then choosing the individual with the highest
-//     * fitness for the parent.
-//     *
-//     * @param t tournament size
-//     * @return Selected Individual
-//     */
-//   def tournamentSelection(t: Int): Individual =
-//     (this.individuals)
-//       .orderBy(rand())
-//       .limit(t)
-//       .orderBy("fitness")
-//       .head()
-//       .getAs[Individual]("individual")
+  /** Tournament selection selects its parents by running a series of "tournaments".
+    * First, individuals are randomly selected from the population and entered into a
+    * tournament. Next, these individuals can be thought to compete with each other
+    * by comparing their fitness values, then choosing the individual with the highest
+    * fitness for the parent.
+    *
+    * @param seed           seed for tournament selection
+    * @param tournamentSize tournament size
+    * @return Option Selected Individual
+    */
+  def tournamentSelection(seed: Int = new  Random().nextInt, tournamentSize: Int): Option[Individual] =
+    this.individuals match {
+      case df if df.isEmpty => None
+      case df =>
+        val r: Row = this.individuals
+          .orderBy(rand(seed))
+          .limit(tournamentSize)
+          .orderBy("fitness")
+          .head()
+        Some(
+          Individual(
+            chromosome = Chromosome(r.getAs[Seq[Long]]("chromosome")).get,
+            fitness = r.getAs[Long]("fitness")
+          )
+        )
+    }
 
 //   /**
 //     * Selects to parents
