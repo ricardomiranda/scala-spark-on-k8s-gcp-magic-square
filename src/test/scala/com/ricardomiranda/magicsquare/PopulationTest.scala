@@ -72,6 +72,36 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     assert(expected == 25.0)
   }
 
+  test(testName = "Fitness of Population with size 10 using percentile 0.05") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 10,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val expected: Double = p.populationFitness(percentile = 0.05)
+    assert(expected == 22.0)
+  }
+
+  test(testName = "Fitness of Population with size 10 using percentile 0.10") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 10,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val expected: Double = p.populationFitness(percentile = 0.10)
+    assert(expected == 23.5)
+  }
+
+
+
+
+  
   //   "of size 2, sorted" should {
   //     "with chromosomes A = Seq(1,2,3,4) and B = Seq(1,2,3,4,5,6,7,8,9), B be 2nd" in {
   //       val spark: SparkSession = SparkSession.builder()
