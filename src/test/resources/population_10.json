@@ -1,0 +1,10 @@
+{"chromosome": [3, 0, 1, 2], "fitness": 25}
+{"chromosome": [1, 0, 3, 2], "fitness": 25}
+{"chromosome": [3, 1, 0, 2], "fitness": 30}
+{"chromosome": [1, 0, 2, 3], "fitness": 25}
+{"chromosome": [0, 2, 3, 1], "fitness": 30}
+{"chromosome": [2, 0, 1, 3], "fitness": 22}
+{"chromosome": [1, 0, 2, 3], "fitness": 25}
+{"chromosome": [3, 0, 2, 1], "fitness": 25}
+{"chromosome": [2, 3, 1, 0], "fitness": 25}
+{"chromosome": [1, 2, 3, 0], "fitness": 25}
