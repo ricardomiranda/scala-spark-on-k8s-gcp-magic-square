@@ -9,13 +9,13 @@ class IndividualTest
 
   "A new Individal " when {
     "chromosome size is 1" should {
-      "be Individual.chromosome == Seq(0)" in {
+      "be Individual.chromosome == Seq(1)" in {
         val actual: Option[Individual] = Individual(
           chromosomeSize = 1,
           randomGenerator = new Random(0L)
         )
 
-        val expected: Option[Chromosome] = Chromosome(Seq(0))
+        val expected: Option[Chromosome] = Chromosome(Seq(1))
 
         actual.get.chromosome shouldBe expected.get
       }
@@ -44,27 +44,27 @@ class IndividualTest
     }
 
     "chromosome size is 4 and Random seed 0" should {
-      "be Individual.chromosome == Seq(3, 0, 1, 2)" in {
+      "be Individual.chromosome == Seq(4, 1, 2, 3)" in {
         val actual: Option[Individual] = Individual(
           chromosomeSize = 4,
           randomGenerator = new Random(0L)
         )
 
-        val expected: Option[Chromosome] = Chromosome(Seq(3, 0, 1, 2))
+        val expected: Option[Chromosome] = Chromosome(Seq(4, 1, 2, 3))
 
         actual.get.chromosome shouldBe expected.get
       }
     }
 
     "chromosome size is 9 and Random seed 0" should {
-      "be Individual.chromosome == Seq(3, 7, 2, 1, 0, 5, 4, 8, 6)" in {
+      "be Individual.chromosome == Seq(4, 8, 3, 2, 1, 6, 5, 9, 7)" in {
         val actual: Option[Individual] = Individual(
           chromosomeSize = 9,
           randomGenerator = new Random(0L)
         )
 
         val expected: Option[Chromosome] =
-          Chromosome(Seq(3, 7, 2, 1, 0, 5, 4, 8, 6))
+          Chromosome(Seq(4, 8, 3, 2, 1, 6, 5, 9, 7))
 
         actual.get.chromosome shouldBe expected.get
       }

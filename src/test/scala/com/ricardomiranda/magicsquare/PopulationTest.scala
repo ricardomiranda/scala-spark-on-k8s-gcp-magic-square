@@ -2,6 +2,8 @@ package com.ricardomiranda.magicsquare
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.DataFrame
 import org.scalatest._
 
 import scala.util.Random
@@ -31,103 +33,44 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     assert(p.individuals.count() == 1)
   }
 
-  //   "of size 10 with Individual chromosome size 1" should {
-  //     "the chromosome of the 5th individual == Seq(0)" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //     	  .appName("Testing Population Magic Squares wiht Spark")
-  //     	  .master("local[*]")
-  //     	  .getOrCreate()
+  test(testName = "Check contents of population DF") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 10,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+    val actual: Int = CoreSpark.hashed_dataframe(p.individuals)
 
-  //       Population(10,1,new Random(),spark).individuals.zipWithIndex().filter(_._2 == 4).first._1._2.chromosome shouldBe Seq(0)
+    assert(actual == 205707748)
+  }
 
-  //     	spark.stop()
-  //     }
-  //   }
+  test(testName = "Fitness of Population with size 0") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 0,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   "of size 5 with Individual chromosome size 3 and Random seed 0" should {
-  //     "the chromosome of the first element of the Population == Seq(2,1,0)" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
+    val expected: Double = p.populationFitness(percentile = 0.10)
+    assert(expected == 0.0)
+  }
 
-  //       Population(5,3,new Random(0),spark).individuals.first._2.chromosome should contain theSameElementsInOrderAs(Vector(2,1,0))
+  test(testName = "Fitness of Population with size 1") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 1,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  // spark.stop()
-  //     }
-  //   }
-
-  //   "of size 5" should {
-  //     "be a Population of size 5" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
-
-  //       Population(5,3,new Random(0),spark).individuals.count shouldBe 5
-
-  // spark.stop()
-  //     }
-  //   }
-
-  //   "of size 1 with Individual with chromosome Seq(0,1,5)" should {
-  //     "the chromosome of the element of the Population == Seq(0,1,5)" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
-
-  //       Population(spark.sparkContext.parallelize(Seq((-1,Individual(Seq(0,1,5))))),spark).individuals.first._2.chromosome should contain theSameElementsInOrderAs(Vector(0,1,5))
-
-  // spark.stop()
-  //     }
-  //   }
-
-  //   "of size 2 with Individual with chromosomes Seq(0,1,5)" should {
-  //     "the chromosome of the 2nd element of the Population == Seq(0,1,5)" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
-
-  //       Population(spark.sparkContext.parallelize(
-  //                     Seq((-1,Individual(Seq(0,1,5))),
-  //                         (-1,Individual(Seq(0,1,5))))),
-  //         spark).individuals.first._2.chromosome should contain theSameElementsInOrderAs(Vector(0,1,5))
-
-  // spark.stop()
-  //     }
-  //   }
-  // }
-
-  // "A Population" when {
-  //   "of size 1" should {
-  //     "with chromosome Seq(1,2,3,4) have fitness Some(33)" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
-
-  //       Population(spark.sparkContext.parallelize(
-  //                     Seq((-1,Individual(Seq(1,2,3,4))))),
-  //         spark).calcFitness.individuals.first._1 shouldBe 33
-
-  // spark.stop()
-  //     }
-
-  //     "with chromosome Seq(1,2,3,4) retain same order" in {
-  //       val spark: SparkSession = SparkSession.builder()
-  //   .appName("Testing Population Magic Squares wiht Spark")
-  //   .master("local[*]")
-  //   .getOrCreate()
-
-  //       Population(spark.sparkContext.parallelize(
-  //                     Seq((-1,Individual(Seq(1,2,3,4))))),
-  //         spark).calcFitness.individuals.sortByKey().first._2.chromosome should contain theSameElementsInOrderAs(Vector(1,2,3,4))
-
-  // spark.stop()
-  //     }
-  //   }
+    val expected: Double = p.populationFitness(percentile = 0.10)
+    assert(expected == 25.0)
+  }
 
   //   "of size 2, sorted" should {
   //     "with chromosomes A = Seq(1,2,3,4) and B = Seq(1,2,3,4,5,6,7,8,9), B be 2nd" in {

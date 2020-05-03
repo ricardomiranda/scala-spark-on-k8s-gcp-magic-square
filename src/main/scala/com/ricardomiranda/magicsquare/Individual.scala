@@ -108,7 +108,7 @@ object Individual extends StrictLogging {
       chromosomeSize: Long,
       randomGenerator: Random
   ): Option[Individual] =
-    Chromosome(randomGenerator.shuffle(Seq.range(0, chromosomeSize))) match {
+    Chromosome(randomGenerator.shuffle(Seq.range(1, chromosomeSize + 1))) match {
       case None =>
         logger.debug(
           s"It was not possible to create individual with size: ${chromosomeSize}"
