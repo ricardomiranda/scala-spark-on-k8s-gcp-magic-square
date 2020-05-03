@@ -55,8 +55,8 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Double = p.populationFitness(percentile = 0.10)
-    assert(expected == 0.0)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    assert(expected == None)
   }
 
   test(testName = "Fitness of Population with size 1") {
@@ -68,8 +68,8 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Double = p.populationFitness(percentile = 0.10)
-    assert(expected == 25.0)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    assert(expected == Some(25.0))
   }
 
   test(testName = "Fitness of Population with size 10 using percentile 0.05") {
@@ -81,8 +81,8 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Double = p.populationFitness(percentile = 0.05)
-    assert(expected == 22.0)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.05)
+    assert(expected == Some(22.0))
   }
 
   test(testName = "Fitness of Population with size 10 using percentile 0.10") {
@@ -94,14 +94,62 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Double = p.populationFitness(percentile = 0.10)
-    assert(expected == 23.5)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    assert(expected == Some(23.5))
   }
 
+  test(testName = "Tournament selection from of Population with size 0") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 0,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
+    val actual: Option[Individual] = p.tournamentSelection(tournamentSize = 1)
+    assert(actual == None)
+  }
 
+  test(testName = "Tournament selection from of Population with size 1") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 1,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  
+    val actual: Option[Individual] = p.tournamentSelection(tournamentSize = 1)
+    val expected: Some[Individual] =
+      Some(
+        Individual(chromosome = Chromosome(Seq(4, 1, 2, 3)).get, fitness = 25)
+      )
+    assert(actual == expected)
+  }
+
+  test(testName =
+    """
+  Tournament selection with size 5 from of Population with size 100"""
+  ) {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 100,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val actual: Long =
+      p.tournamentSelection(seed = 0, tournamentSize = 5).get.fitness
+    val expected: Long =
+      Some(
+        Individual(chromosome = Chromosome(Seq(2, 4, 3, 1)).get, fitness = 22)
+      ).get.fitness
+
+    assert(actual == expected)
+  }
+
   //   "of size 2, sorted" should {
   //     "with chromosomes A = Seq(1,2,3,4) and B = Seq(1,2,3,4,5,6,7,8,9), B be 2nd" in {
   //       val spark: SparkSession = SparkSession.builder()
@@ -124,17 +172,6 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   //   .appName("Testing Population Magic Squares wiht Spark")
   //   .master("local[*]")
   //   .getOrCreate()
-
-  //       Population(spark.sparkContext.parallelize(
-  //                     Seq((-1,Individual(Seq(1,2,3,4))),
-  //                         (-1,Individual(Seq(1,2,3,4,5,6,7,8,9))),
-  //                         (-1,Individual(Seq(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))))),
-  //         spark).calcFitness.tournamentSelection(2, new Random(2)).chromosome should contain theSameElementsInOrderAs(Vector(1,2,3,4,5,6,7,8,9))
-
-  // spark.stop()
-  //     }
-  //   }
-
   //   "of size 3 with tournament size 2 and number of children 2" should {
   //     "return a sequence of parents with size 2" in {
   //       val spark: SparkSession = SparkSession.builder()
