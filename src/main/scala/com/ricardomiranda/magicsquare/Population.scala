@@ -73,8 +73,9 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * by comparing their fitness values, then choosing the individual with the highest
     * fitness for the parent.
     *
+    * @param seed           seed for tournament selection
     * @param tournamentSize tournament size
-    * @return Selected Individual
+    * @return Option Selected Individual
     */
   def tournamentSelection(seed: Int = new  Random().nextInt, tournamentSize: Int): Option[Individual] =
     this.individuals match {
