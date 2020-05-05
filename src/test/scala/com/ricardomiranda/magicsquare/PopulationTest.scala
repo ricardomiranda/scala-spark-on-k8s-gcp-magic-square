@@ -110,7 +110,11 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       )
 
     val actual: Option[DataFrame] =
-      p.tournamentSelection(nbrOfParents = 2, seed = 0, tournamentSize = 1)
+      p.tournamentSelection(
+        nbrOfParents = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 1
+      )
     assert(actual == None)
   }
 
@@ -124,7 +128,11 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       )
 
     val actual: Option[DataFrame] =
-      p.tournamentSelection(nbrOfParents = 2, seed = 0, tournamentSize = 1)
+      p.tournamentSelection(
+        nbrOfParents = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 1
+      )
     assert(actual == None)
   }
 
@@ -140,15 +148,19 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       )
 
     val actual: Option[DataFrame] =
-      p.tournamentSelection(nbrOfParents = 2, seed = 0, tournamentSize = 1)
+      p.tournamentSelection(
+        nbrOfParents = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 1
+      )
 
     val expected: Some[DataFrame] =
       Some(
         spark
           .createDataFrame(
             Seq(
-              (Chromosome(Seq(2, 1, 4 ,3)).get.value, 25),
-              (Chromosome(Seq(2, 1, 4 ,3)).get.value, 25)
+              (Chromosome(Seq(2, 1, 4, 3)).get.value, 25),
+              (Chromosome(Seq(2, 1, 4, 3)).get.value, 25)
             )
           )
           .toDF("chromosome", "fitness")
@@ -175,91 +187,127 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       )
 
     val actual: Option[DataFrame] =
-      p.tournamentSelection(nbrOfParents = 10, seed = 0, tournamentSize = 5)
+      p.tournamentSelection(
+        nbrOfParents = 10,
+        randomGenerator = new Random(0),
+        tournamentSize = 5
+      )
 
-    assert(CoreSpark.hashed_dataframe(actual.get) == -1807445355)
+    assert(CoreSpark.hashed_dataframe(actual.get) == 1254853226)
   }
 
-  // test(testName = "Fitest individual of Population with size 0") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 0,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Fitest individual of Population with size 0") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 0,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[Long] = p.fitestIndividual
-  //   assert(expected == None)
-  // }
+    val expected: Option[Long] = p.fitestIndividual
+    assert(expected == None)
+  }
 
-  // test(testName = "Fitest individual of Population with size 1") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 1,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Fitest individual of Population with size 1") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 1,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[Long] = p.fitestIndividual
-  //   assert(expected == Some(25))
-  // }
+    val expected: Option[Long] = p.fitestIndividual
+    assert(expected == Some(25))
+  }
 
-  // test(testName = "Fitest individual of Population with size 100") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 100,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Fitest individual of Population with size 100") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 100,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[Long] = p.fitestIndividual
-  //   assert(expected == Some(22))
-  // }
+    val expected: Option[Long] = p.fitestIndividual
+    assert(expected == Some(22))
+  }
 
-  // test(testName = "Select parents form Population with size 0") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 0,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Select parents form Population with size 0") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 0,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[DataFrame] =
-  //     p.selectParents(nbrOfChildren = 2, tournamentSize = 2)
-  //   assert(expected == None)
-  // }
+    val expected: Option[DataFrame] =
+      p.selectParents(
+        nbrOfOffspring = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
+    assert(expected == None)
+  }
 
-  // test(testName = "Select parents form Population with size 1") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 1,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Select parents form Population with size 1") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 1,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[DataFrame] =
-  //     p.selectParents(nbrOfChildren = 2, tournamentSize = 2)
-  //   assert(expected == None)
-  // }
+    val expected: Option[DataFrame] =
+      p.selectParents(
+        nbrOfOffspring = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
+    assert(expected == None)
+  }
 
-  // test(testName = "Select parents for 1 offspring form Population with size 2") {
-  //   val p: Population =
-  //     Population(
-  //       chromosomeSize = 4,
-  //       populationSize = 2,
-  //       randomGenerator = new Random(0),
-  //       sparkSession = spark
-  //     )
+  test(testName = "Select parents for 1 offspring form Population with size 2") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 2,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
 
-  //   val expected: Option[DataFrame] =
-  //     p.selectParents(nbrOfChildren = 2, tournamentSize = 2)
-  //     expected.get.show()
-  //   assert(expected == None)
-  // }
+    val expected: Option[DataFrame] =
+      p.selectParents(
+        nbrOfOffspring = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
 
+    assert(expected.get.count == 2)
+  }
+
+  test(testName =
+    "Select parents for 5 offspring form Population with size 2000"
+  ) {
+    val p: Population =
+      Population(
+        chromosomeSize = 9,
+        populationSize = 20000,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val expected: Option[DataFrame] =
+      p.selectParents(
+        nbrOfOffspring = 5,
+        randomGenerator = new Random(0),
+        tournamentSize = 5
+      )
+
+    assert(expected.get.count == 5)
+  }
 }
