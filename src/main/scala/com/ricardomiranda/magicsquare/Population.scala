@@ -1,5 +1,6 @@
 package com.ricardomiranda.magicsquare
 
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{min, max, rand, sum}
 import org.apache.spark.sql.types._
@@ -7,6 +8,7 @@ import org.apache.spark.sql.types._
 import scala.util.Random
 import com.typesafe.scalalogging.StrictLogging
 import breeze.util.Opt
+import shapeless.Data
 
 case class Population(individuals: DataFrame, sparkSession: SparkSession)
     extends StrictLogging {
@@ -52,6 +54,33 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
   // }
 
   /**
+    * Offspring part of the population
+    *
+    * @param crossoverRate crossover rate
+    * @param mutationRate  mutation rate
+    * @param parents       DataFrame with 1 parent in each line
+    * @param seed          seed for tournament selection
+    * @return DataFrame with offspring part of the population
+    */
+  // def offspring(
+  //     parents: DataFrame,
+  //     mutationRate: Double,
+  //     c: Double
+  // ): DataFrame = {
+
+  //   // parents.withColumn(
+  //   //   "offsppring",
+  //   //   parents
+  //   //     .col("p1")
+  //   //     .crossover(
+  //   //       parents.col("p2"),
+  //   //       crossoverRate = crossoverRate,
+  //   //       new Random()
+  //   //     )
+  //   //     .mutation(mutationRate, new Random())
+  // }
+
+  /**
     * Computes Population fitness based on a percentile
     *
     * @param percentile Percentile of the Population to use to compute fitness
@@ -75,44 +104,60 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
         )
     }
 
-  // /**
-  //   * Selects the parents
-  //   *
-  //   * @param nbrOfChildren  number of children
-  //   * @param seed           seed for tournament selection
-  //   * @param tournamentSize tournament size
-  //   * @return DataFrame with 2 parents in each line
-  //   */
-  // def selectParents(
-  //     nbrOfChildren: Long,
-  //     seed: Int = new Random().nextInt,
-  //     tournamentSize: Int
-  // ): Option[DataFrame] =
-  //   this.individuals match {
-  //     case df if df.count < 2 => None
-  //     case df =>
-  //       logger.debug(
-  //         s"Selecting parents for ${nbrOfChildren} children with tournament size: ${tournamentSize}"
-  //       )
-  //       import sparkSession.implicits._
-  //       Some(
-  //         sparkSession.sparkContext
-  //           .parallelize(1 to nbrOfChildren.toInt)
-  //           .map(_ =>
-  //             (
-  //               tournamentSelection(
-  //                 seed = seed,
-  //                 tournamentSize = tournamentSize
-  //               ).get,
-  //               tournamentSelection(
-  //                 seed = seed,
-  //                 tournamentSize = tournamentSize
-  //               ).get
-  //             )
-  //           )
-  //           .toDF("p1", "p2")
-  //       )
-  //   }
+  /**
+    * Selects parents
+    *
+    * @param nrbOffOfspring  number of children
+    * @param randomGenerator Random generator
+    * @param tournamentSize  tournament size
+    * @return Option[DataFrame] with columns "p1" and "p2"
+    */
+  def selectParents(
+      nbrOfOffspring: Long,
+      randomGenerator: Random,
+      tournamentSize: Int
+  ): Option[DataFrame] = {
+    def eachParent(colName: String, randomGenerator: Random): DataFrame = {
+      import sparkSession.implicits._
+
+      val struct: StructType = StructType(
+        Seq(
+          StructField(colName, ArrayType(LongType, false), true),
+          StructField("id", LongType, false)
+        )
+      )
+
+      val pRDD: RDD[(Row, Long)] = tournamentSelection(
+        nbrOfParents = nbrOfOffspring,
+        randomGenerator = randomGenerator,
+        tournamentSize = tournamentSize
+      ).get
+        .drop(colName = "fitness")
+        .rdd
+        .zipWithIndex
+
+      sparkSession.createDataFrame(pRDD.map {
+        case (r, i) => Row.fromSeq(r.toSeq ++ Seq(i))
+      }, struct)
+    }
+
+    this.individuals match {
+      case df if df.count < 2 => None
+      case df =>
+        logger.debug(
+          s"Selecting parents for ${nbrOfOffspring} children with tournament size: ${tournamentSize}"
+        )
+
+        Some(
+          eachParent(colName = "p1", randomGenerator = randomGenerator)
+            .join(
+              eachParent(colName = "p2", randomGenerator = randomGenerator),
+              Seq("id")
+            )
+            .drop(colName = "id")
+        )
+    }
+  }
 
   /** Tournament selection selects its parents by running a series of "tournaments".
     * First, individuals are randomly selected from the population and entered into a
@@ -120,15 +165,15 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * by comparing their fitness values, then choosing the individual with the highest
     * fitness for the parent.
     *
-    * @param nbrOfParents   Number of parents to select (2 times the number of
-    *                       offspring)
-    * @param seed           seed for tournament selection
-    * @param tournamentSize tournament size
+    * @param nbrOfParents    Number of parents to select (2 times the number of
+    *                        offspring)
+    * @param randomGenerator Random generator
+    * @param tournamentSize  tournament size
     * @return Option Dataframe with selected Individuals
     */
   def tournamentSelection(
-      nbrOfParents: Int,
-      seed: Int = new Random().nextInt,
+      nbrOfParents: Long,
+      randomGenerator: Random,
       tournamentSize: Int
   ): Option[DataFrame] =
     this.individuals match {
@@ -137,10 +182,10 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
         logger.debug(
           s"Tournament selection with tournament size: ${tournamentSize}"
         )
-        val rs: Seq[(Seq[Long], Long)] = (1 to nbrOfParents)
+        val rs: Seq[(Seq[Long], Long)] = (1L to nbrOfParents)
           .map(_ =>
             this.individuals
-              .orderBy(rand(seed))
+              .orderBy(rand(randomGenerator.nextInt()))
               .limit(tournamentSize)
               .orderBy("fitness")
               .head()
@@ -153,31 +198,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
           )
         Some(sparkSession.createDataFrame(rs).toDF("chromosome", "fitness"))
     }
-//   /**
-//     * Offspring part of the population
-//     *
-//     * @param crossoverRate crossover rate
-//     * @param mutationRate  mutation rate
-//     * @param parents       DataFrame with 2 parents in each line
-//     * @return DataFrame with offspring part of the population
-//     *         (chromosome, fitnes, individual)
-//     */
-//   def offspring(
-//       parents: DataFrame,
-//       mutationRate: Double,
-//       c: Double
-//   ): DataFrame =
-//     parents.withColumn(
-//       "offsppring",
-//       parents
-//         .col("p1")
-//         .crossover(
-//           parents.col("p2"),
-//           crossoverRate = crossoverRate,
-//           new Random()
-//         )
-//         .mutation(mutationRate, new Random())
-  // )
+
 }
 
 object Population {
