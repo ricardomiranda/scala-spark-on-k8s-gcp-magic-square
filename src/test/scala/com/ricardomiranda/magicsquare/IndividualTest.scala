@@ -99,11 +99,11 @@ class IndividualTest
       "have no mutation" in {
         val c: Chromosome = Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
 
-        val actual: Individual = Individual(chromosome = c).get
-          .mutation(mutationRate = 0.0, randomGenerator = new Random(0L))
+        val actual: Seq[Long] =
+          Individual.mutation(0.0)(new Random(0L))(c.value)
 
-        actual.chromosome.value should contain theSameElementsInOrderAs (
-            Vector(1, 2, 3, 4, 5, 6, 7, 8, 9))
+        actual should contain theSameElementsInOrderAs (Vector(1, 2, 3, 4, 5, 6,
+            7, 8, 9))
       }
     }
 
@@ -111,11 +111,11 @@ class IndividualTest
       "have mutation form Seq(1,2,3,4,5,6,7,8,9) to Seq(6,8,3,4,9,2,7,1,5)" in {
         val c: Chromosome = Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
 
-        val actual: Individual = Individual(chromosome = c).get
-          .mutation(mutationRate = 1.0, randomGenerator = new Random(0L))
+        val actual: Seq[Long] =
+          Individual.mutation(1.0)(new Random(0L))(c.value)
 
-        actual.chromosome.value should contain theSameElementsInOrderAs (
-            Vector(1, 5, 3, 4, 2, 6, 7, 8, 9))
+        actual should contain theSameElementsInOrderAs (Vector(1, 5, 3, 4, 2, 6,
+            7, 8, 9))
       }
     }
   }
@@ -125,39 +125,46 @@ class IndividualTest
     whith chromosomes Seq(1, 2, 3, 4, 5, 6, 7, 8, 9) and 
     Seq(9, 8, 7, 6, 5, 4, 3, 2, 1) and crossover = 0.0""" should {
       "produce Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)" in {
-        val actual: Individual =
+        val me =
           Individual(chromosome =
             Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
           ).get
-            .crossover(
-              crossoverRate = 0.0,
-              other = Individual(chromosome =
+
+        val actual: Chromosome =
+          Chromosome(
+            Individual.crossover(0.0)(new Random(0))(me.chromosome.value)(
+              Individual(chromosome =
                 Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
-              ).get,
-              randomGenerator = new Random(0)
+              ).get.chromosome.value
             )
-        actual.chromosome.value should contain theSameElementsInOrderAs (
-            Vector(1, 2, 3, 4, 5, 6, 7, 8, 9))
+          ).get
+
+        actual.value should contain theSameElementsInOrderAs (Vector(1, 2, 3, 4,
+            5, 6, 7, 8, 9))
       }
     }
 
     """
-    whith chromosomes Seq(1, 2, 3, 4, 5, 6, 7, 8, 9) and 
+    whith chromosomes Seq(1, 2, 3, 4, 5, 6, 7, 8, 9) and
     Seq(9, 8, 7, 6, 5, 4, 3, 2, 1) and crossover 1.0"""" should {
       "produce Seq(1,2,3,4)" in {
-        val actual: Individual =
+        val me: Individual =
           Individual(chromosome =
             Chromosome(Seq(1, 2, 3, 4, 5, 6, 7, 8, 9)).get
           ).get
-            .crossover(
-              crossoverRate = 1.0,
-              other = Individual(chromosome =
-                Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
-              ).get,
-              randomGenerator = new Random(0)
-            )
-        actual.chromosome.value should contain theSameElementsInOrderAs (
-            Vector(9, 2, 3, 4, 5, 8, 7, 6, 1))
+
+        val actual: Chromosome =
+          Chromosome(
+            Individual
+              .crossover(1.0)(new Random(0))(me.chromosome.value)(
+                Individual(chromosome =
+                  Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
+                ).get.chromosome.value
+              )
+          ).get
+
+        actual.value should contain theSameElementsInOrderAs (Vector(9, 2, 3, 4,
+            5, 8, 7, 6, 1))
       }
     }
   }
