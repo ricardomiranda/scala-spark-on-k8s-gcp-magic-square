@@ -2,13 +2,14 @@ package com.ricardomiranda.magicsquare
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{min, max, rand, sum}
+import org.apache.spark.sql.functions.{min, max, rand, sum, udf}
 import org.apache.spark.sql.types._
 
 import scala.util.Random
 import com.typesafe.scalalogging.StrictLogging
 import breeze.util.Opt
 import shapeless.Data
+import org.apache.spark.sql.expressions.UserDefinedFunction
 
 case class Population(individuals: DataFrame, sparkSession: SparkSession)
     extends StrictLogging {
@@ -56,29 +57,41 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
   /**
     * Offspring part of the population
     *
-    * @param crossoverRate crossover rate
-    * @param mutationRate  mutation rate
-    * @param parents       DataFrame with 1 parent in each line
-    * @param seed          seed for tournament selection
+    * @param crossoverRate   rate
+    * @param mutationRate    mutation rate
+    * @param parents         DataFrame with 2 parents in each line
+    * @param randomGenerator Random generator
     * @return DataFrame with offspring part of the population
     */
-  // def offspring(
-  //     parents: DataFrame,
-  //     mutationRate: Double,
-  //     c: Double
-  // ): DataFrame = {
+  def offspring(
+      crossoverRate: Double,
+      mutationRate: Double,
+      parents: DataFrame,
+      randomGenerator: Random
+  ): DataFrame = {
+    logger.debug(
+      s"Generating ${parents.count()} offspring for the new generation."
+    )
 
-  //   // parents.withColumn(
-  //   //   "offsppring",
-  //   //   parents
-  //   //     .col("p1")
-  //   //     .crossover(
-  //   //       parents.col("p2"),
-  //   //       crossoverRate = crossoverRate,
-  //   //       new Random()
-  //   //     )
-  //   //     .mutation(mutationRate, new Random())
-  // }
+    val crossoverUDF: UserDefinedFunction = udf(
+      Individual.crossover(crossoverRate)(randomGenerator)
+    )
+
+    val mutationUDF: UserDefinedFunction = udf(
+      Individual.mutation(mutationRate)(randomGenerator)
+    )
+
+    parents
+      .withColumn(
+        "offsppringNoMutation",
+        crossoverUDF(parents.col("p1"), parents.col("p2"))
+      )
+      .withColumn(
+        "offsppringWithMutation",
+        crossoverUDF(parents.col("offsppringNoMutation"))
+      )
+  }
+  // .mutation(mutationRate, new Random())
 
   /**
     * Computes Population fitness based on a percentile
