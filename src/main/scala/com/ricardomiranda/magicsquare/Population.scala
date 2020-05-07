@@ -57,7 +57,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
   /**
     * Offspring part of the population
     *
-    * @param crossoverRate   rate
+    * @param crossoverRate   crossover rate
     * @param mutationRate    mutation rate
     * @param parents         DataFrame with 2 parents in each line
     * @param randomGenerator Random generator
@@ -77,21 +77,20 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       Individual.crossover(crossoverRate)(randomGenerator)
     )
 
-    val mutationUDF: UserDefinedFunction = udf(
-      Individual.mutation(mutationRate)(randomGenerator)
-    )
+    val f: Seq[Long] => Long =
+      Individual.calcFitness compose Individual.mutation(mutationRate)(
+        randomGenerator
+      )
+
+    val fUDF: UserDefinedFunction = udf(f)
 
     parents
       .withColumn(
-        "offsppringNoMutation",
+        "offspringWithNoMutation",
         crossoverUDF(parents.col("p1"), parents.col("p2"))
       )
-      .withColumn(
-        "offsppringWithMutation",
-        crossoverUDF(parents.col("offsppringNoMutation"))
-      )
+      .withColumn("fitness", fUDF(parents.col("offspringWithNoMutation")))
   }
-  // .mutation(mutationRate, new Random())
 
   /**
     * Computes Population fitness based on a percentile

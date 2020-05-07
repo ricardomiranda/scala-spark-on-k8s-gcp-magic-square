@@ -132,7 +132,8 @@ class IndividualTest
 
         val actual: Chromosome =
           Chromosome(
-            Individual.crossover(0.0)(new Random(0))(me.chromosome.value)(
+            Individual.crossover(0.0)(new Random(0))(
+              me.chromosome.value,
               Individual(chromosome =
                 Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
               ).get.chromosome.value
@@ -156,7 +157,8 @@ class IndividualTest
         val actual: Chromosome =
           Chromosome(
             Individual
-              .crossover(1.0)(new Random(0))(me.chromosome.value)(
+              .crossover(1.0)(new Random(0))(
+                me.chromosome.value,
                 Individual(chromosome =
                   Chromosome(Seq(9, 8, 7, 6, 5, 4, 3, 2, 1)).get
                 ).get.chromosome.value
@@ -165,6 +167,14 @@ class IndividualTest
 
         actual.value should contain theSameElementsInOrderAs (Vector(9, 2, 3, 4,
             5, 8, 7, 6, 1))
+      }
+    }
+
+    "Chromosome Seq(1, 2, 3, 4) should" should {
+      "have fitness " in {
+        val me: Chromosome = Chromosome(Seq(1, 2, 3, 4)).get
+
+        Individual.calcFitness(me.value) shouldBe 33
       }
     }
   }

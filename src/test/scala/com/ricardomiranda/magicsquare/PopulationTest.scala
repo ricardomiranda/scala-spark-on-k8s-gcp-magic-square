@@ -9,6 +9,7 @@ import org.scalatest._
 import scala.util.Random
 import shapeless.Data
 import checkers.units.quals.s
+import com.holdenkarau.spark.testing.DataframeGenerator
 
 class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "empty dataframe") {
@@ -309,5 +310,33 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       )
 
     assert(expected.get.count == 5)
+  }
+
+  test(testName = "Offspring from population of 2") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 2,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val parents: DataFrame =
+      p.selectParents(
+          nbrOfOffspring = 2,
+          randomGenerator = new Random(0),
+          tournamentSize = 2
+        )
+        .get
+
+    val actual: DataFrame = p.offspring(
+      crossoverRate = 1.0,
+      mutationRate = 1.0,
+      parents = parents,
+      randomGenerator = new Random(0)
+    )
+
+    actual.show()
+    assert(false)
   }
 }
