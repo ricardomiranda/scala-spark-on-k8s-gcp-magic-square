@@ -84,12 +84,16 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
 
     val fUDF: UserDefinedFunction = udf(f)
 
-    parents
-      .withColumn(
-        "offspringWithNoMutation",
-        crossoverUDF(parents.col("p1"), parents.col("p2"))
-      )
-      .withColumn("fitness", fUDF(parents.col("offspringWithNoMutation")))
+    val df: DataFrame =
+      parents
+        .withColumn(
+          "offspringWithNoMutation",
+          crossoverUDF(parents.col("p1"), parents.col("p2"))
+        )
+
+    df.withColumn("fitness", fUDF(df.col("offspringWithNoMutation")))
+      .drop("p1")
+      .drop("p2")
   }
 
   /**

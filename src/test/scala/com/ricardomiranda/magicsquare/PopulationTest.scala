@@ -336,7 +336,33 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       randomGenerator = new Random(0)
     )
 
-    actual.show()
-    assert(false)
+    assert(CoreSpark.hashed_dataframe(actual) == 737897119)
+  }
+
+  test(testName = "190 offspring from population of 200") {
+    val p: Population =
+      Population(
+        chromosomeSize = 9,
+        populationSize = 200,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val parents: DataFrame =
+      p.selectParents(
+          nbrOfOffspring = 190,
+          randomGenerator = new Random(0),
+          tournamentSize = 5
+        )
+        .get
+
+    val actual: DataFrame = p.offspring(
+      crossoverRate = 0.90,
+      mutationRate = 0.05,
+      parents = parents,
+      randomGenerator = new Random(0)
+    )
+
+    assert(CoreSpark.hashed_dataframe(actual) == 1316869124)
   }
 }
