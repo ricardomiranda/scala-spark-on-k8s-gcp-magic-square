@@ -73,35 +73,39 @@ object Individual extends StrictLogging {
     * @param randomGenerator Random generator
     * @return New Individual
     */
-  val crossover: Double => Random => Seq[Long] => Seq[Long] => Seq[Long] =
+  val crossover: Double => Random => (Seq[Long], Seq[Long]) => Seq[Long] =
     crossoverRate =>
       randomGenerator =>
-        me =>
-          other =>
-            crossoverRate match {
-              case crossoverRate
-                  if randomGenerator.nextDouble() > crossoverRate =>
-                me
-              case _ =>
-                val rs: scala.collection.immutable.IndexedSeq[Int] =
-                  for (i <- 1 to 2)
-                    yield randomGenerator.nextInt(
-                      me.size - 1
-                    )
-                val pos1: Int = rs.min
-                val pos2: Int = rs.max
+        (me, other) =>
+          crossoverRate match {
+            case crossoverRate
+                if randomGenerator.nextDouble() > crossoverRate =>
+              me
+            case _ =>
+              val rs: scala.collection.immutable.IndexedSeq[Int] =
+                for (i <- 1 to 2)
+                  yield randomGenerator.nextInt(
+                    me.size - 1
+                  )
+              val pos1: Int = rs.min
+              val pos2: Int = rs.max
 
-                val fstParentContrib: Seq[Long] =
-                  me.drop(pos1).take(pos2)
-                val sndParentContrib: Seq[Long] =
-                  for (i <- other if !fstParentContrib.contains(i)) yield i
+              val fstParentContrib: Seq[Long] =
+                me.drop(pos1).take(pos2)
+              val sndParentContrib: Seq[Long] =
+                for (i <- other if !fstParentContrib.contains(i)) yield i
 
-                Chromosome(
-                  sndParentContrib.take(pos1) ++
-                    fstParentContrib ++
-                    sndParentContrib.drop(pos1)
-                ).get.value
-            }
+              Chromosome(
+                sndParentContrib.take(pos1) ++
+                  fstParentContrib ++
+                  sndParentContrib.drop(pos1)
+              ).get.value
+          }
+
+  val calcFitness: Seq[Long] => Long = me => {
+    logger.debug(s"Calc fitness for chromosome ${me}")
+    MagicSquare.squareDiferences(Chromosome(me).get).get
+  }
 
   /**Swap mutation, is an algorithm that will simply swap the genetic information at
     * two points. Swap mutation works by looping though the genes in the individual’s
