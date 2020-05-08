@@ -27,32 +27,49 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
         Some(this.individuals.agg(min("fitness")).head.getLong(0))
     }
 
-  // /**
-  //   * Compute a new generation
-  //   *
-  //   * @param crossoverRate  crossover rate
-  //   * @param elite          elite
-  //   * @param mutationRate   mutation rate
-  //   * @param tournamentSize tournament size
-  //   * @return
-  //   */
-  // def newGeneration(
-  //     crossoverRate: Double,
-  //     elite: Int,
-  //     mutationRate: Double,
-  //     tournamentSize: Int
-  // ): Population = {
-  //   val elitePopulation: DataFrame = this.individuals.orderBy(rand()).limit(e)
+  /**
+    * Compute a new generation
+    *
+    * @param crossoverRate   crossover rate
+    * @param elite           elite
+    * @param mutationRate    mutation rate
+    * @param randomGenerator Random generator
+    * @param tournamentSize  tournament size
+    * @return
+    */
+  def newGeneration(
+      crossoverRate: Double,
+      elite: Int,
+      mutationRate: Double,
+      randomGenerator: Random,
+      tournamentSize: Int
+  ): Population = {
+    val elitePopulation: DataFrame =
+      this.individuals.orderBy(rand()).limit(elite)
 
-  //   val offspringPopulation: DataFrame =
-  //     offspring(
-  //       selectParents(this.individuals.count - elite, tournamentSize),
-  //       mutationRate,
-  //       crossoverRate
-  //     )
+    val offspringPopulation: DataFrame = this.individuals.count - elite match {
+      case n if n == 0 =>
+        sparkSession.createDataFrame(
+          sparkSession.sparkContext.emptyRDD[Row],
+          elitePopulation.schema
+        )
+      case n =>
+        offspring(
+          crossoverRate = crossoverRate,
+          mutationRate = mutationRate,
+          parents = this
+            .selectParents(
+              nbrOfOffspring = n,
+              randomGenerator = randomGenerator,
+              tournamentSize = tournamentSize
+            )
+            .get,
+          randomGenerator = randomGenerator
+        )
+    }
 
-  //   this.copy(individuals = offspringPopulation.join(elitePopulation))
-  // }
+    this.copy(individuals = offspringPopulation.union(elitePopulation))
+  }
 
   /**
     * Offspring part of the population
@@ -87,11 +104,11 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     val df: DataFrame =
       parents
         .withColumn(
-          "offspringWithNoMutation",
+          "chromosome",
           crossoverUDF(parents.col("p1"), parents.col("p2"))
         )
 
-    df.withColumn("fitness", fUDF(df.col("offspringWithNoMutation")))
+    df.withColumn("fitness", fUDF(df.col("chromosome")))
       .drop("p1")
       .drop("p2")
   }
@@ -181,8 +198,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * by comparing their fitness values, then choosing the individual with the highest
     * fitness for the parent.
     *
-    * @param nbrOfParents    Number of parents to select (2 times the number of
-    *                        offspring)
+    * @param nbrOfParents    Number of parents to select
     * @param randomGenerator Random generator
     * @param tournamentSize  tournament size
     * @return Option Dataframe with selected Individuals

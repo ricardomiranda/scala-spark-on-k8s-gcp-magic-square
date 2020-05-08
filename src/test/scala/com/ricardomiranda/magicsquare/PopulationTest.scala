@@ -167,13 +167,11 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
           .toDF("chromosome", "fitness")
       )
 
-    actual.get.show()
     assert(
       CoreSpark.hashed_dataframe(actual.get) == CoreSpark.hashed_dataframe(
         expected.get
       )
     )
-    actual.get.show()
   }
 
   test(testName =
@@ -336,7 +334,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       randomGenerator = new Random(0)
     )
 
-    assert(CoreSpark.hashed_dataframe(actual) == 737897119)
+    assert(CoreSpark.hashed_dataframe(actual) == -1544732213)
   }
 
   test(testName = "190 offspring from population of 200") {
@@ -363,6 +361,87 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       randomGenerator = new Random(0)
     )
 
-    assert(CoreSpark.hashed_dataframe(actual) == 1316869124)
+    assert(
+      CoreSpark.hashed_dataframe(actual.orderBy("fitness", "chromosome")) == -589824148
+    )
+  }
+
+  test(testName = "Generate a new generation of 2 with 0 offspring") {
+    val p: Population =
+      Population(
+        chromosomeSize = 4,
+        populationSize = 2,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val actual: Population = p.newGeneration(
+      crossoverRate = 0.0,
+      elite = 2,
+      mutationRate = 0.05,
+      randomGenerator = new Random(0),
+      tournamentSize = 2
+    )
+
+    assert(
+      CoreSpark.hashed_dataframe(
+        p.individuals.orderBy("fitness", "chromosome")
+      ) == CoreSpark
+        .hashed_dataframe(
+          actual.individuals.orderBy("fitness", "chromosome")
+        )
+    )
+  }
+
+  test(testName = "Generate a new generation of 4 with 2 offspring") {
+    val p: Population =
+      Population(
+        chromosomeSize = 9,
+        populationSize = 4,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val actual: Population = p.newGeneration(
+      crossoverRate = 1.0,
+      elite = 2,
+      mutationRate = 0.05,
+      randomGenerator = new Random(0),
+      tournamentSize = 2
+    )
+
+    p.individuals.show()
+    actual.individuals.show()
+    assert(
+      CoreSpark.hashed_dataframe(
+        actual.individuals.orderBy("fitness", "chromosome")
+      ) == -772566581
+    )
+  }
+
+  test(testName = "Generate a new generation of 200 with 195 offspring") {
+    val p: Population =
+      Population(
+        chromosomeSize = 9,
+        populationSize = 200,
+        randomGenerator = new Random(0),
+        sparkSession = spark
+      )
+
+    val actual: Population = p.newGeneration(
+      crossoverRate = 1.0,
+      elite = 5,
+      mutationRate = 0.05,
+      randomGenerator = new Random(0),
+      tournamentSize = 5
+    )
+
+    p.individuals.show()
+    actual.individuals.show()
+    assert(
+      CoreSpark.hashed_dataframe(
+        actual.individuals.orderBy("fitness", "chromosome")
+      ) == 257228562
+    )
   }
 }
