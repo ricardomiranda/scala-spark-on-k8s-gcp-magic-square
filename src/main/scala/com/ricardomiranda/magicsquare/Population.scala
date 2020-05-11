@@ -41,7 +41,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       crossoverRate: Double,
       elite: Int,
       mutationRate: Double,
-      randomGenerator: Random,
+      randomGenerator: Random = new Random,
       tournamentSize: Int
   ): Population = {
     val elitePopulation: DataFrame =
@@ -84,7 +84,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       crossoverRate: Double,
       mutationRate: Double,
       parents: DataFrame,
-      randomGenerator: Random
+      randomGenerator: Random = new Random
   ): DataFrame = {
     logger.debug(
       s"Generating ${parents.count()} offspring for the new generation."
@@ -147,10 +147,10 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     */
   def selectParents(
       nbrOfOffspring: Long,
-      randomGenerator: Random,
+      randomGenerator: Random = new Random,
       tournamentSize: Int
   ): Option[DataFrame] = {
-    def eachParent(colName: String, randomGenerator: Random): DataFrame = {
+    def eachParent(colName: String): DataFrame = {
       import sparkSession.implicits._
 
       val struct: StructType = StructType(
@@ -178,15 +178,14 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       case df if df.count < 2 => None
       case df =>
         logger.debug(
-          s"Selecting parents for ${nbrOfOffspring} children with tournament size: ${tournamentSize}"
+          s"""
+          Selecting parents for ${nbrOfOffspring} offspring with 
+          tournament size: ${tournamentSize}"""
         )
 
         Some(
-          eachParent(colName = "p1", randomGenerator = randomGenerator)
-            .join(
-              eachParent(colName = "p2", randomGenerator = randomGenerator),
-              Seq("id")
-            )
+          eachParent(colName = "p1")
+            .join(eachParent(colName = "p2"), Seq("id"))
             .drop(colName = "id")
         )
     }
@@ -205,7 +204,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     */
   def tournamentSelection(
       nbrOfParents: Long,
-      randomGenerator: Random,
+      randomGenerator: Random = new Random,
       tournamentSize: Int
   ): Option[DataFrame] =
     this.individuals match {
@@ -247,7 +246,7 @@ object Population {
   def apply(
       chromosomeSize: Long,
       populationSize: Int,
-      randomGenerator: Random,
+      randomGenerator: Random = new Random,
       sparkSession: SparkSession
   ) = {
 
