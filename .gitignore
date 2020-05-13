@@ -29,6 +29,7 @@ project/plugins/project/
 
 # Metals
 .metals
+project/metals.sbt
 .bloop/
 
 .scalafmt.conf

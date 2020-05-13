@@ -5,6 +5,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{min, max, rand, sum, udf}
 import org.apache.spark.sql.types._
 
+import scala.collection.mutable.WrappedArray
 import scala.util.Random
 import com.typesafe.scalalogging.StrictLogging
 import breeze.util.Opt
@@ -17,14 +18,20 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
   /**
     * Find the fitest individual and returns its fitness
     *
-    * @return Option Fitest individual fitness
+    * @return Option Fitest individual chromosome and fitness
     */
-  def fitestIndividual: Option[Long] =
+  def fitestIndividual: Option[(Seq[Long], Long)] =
     this.individuals match {
       case df if df.isEmpty => None
       case df =>
         logger.debug(s"Computing top fitness")
-        Some(this.individuals.agg(min("fitness")).head.getLong(0))
+        val r: Row =
+          this.individuals
+            .orderBy("fitness")
+            .limit(1)
+            .head
+
+        Some((r.getAs[WrappedArray[Long]](0), r.getAs[Long](1)))
     }
 
   /**

@@ -1,0 +1,11 @@
+{
+  "crossoverRate": 0.95,
+  "elite": 5,
+  "iter": 100,
+  "mutationRate": 0.05,
+  "output": 10,
+  "percentile": 0.20,
+  "popSize": 50,
+  "sideSize": 4,
+  "tournamentSize": 4
+}

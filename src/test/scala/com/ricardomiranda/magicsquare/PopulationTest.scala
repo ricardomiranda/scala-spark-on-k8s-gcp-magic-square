@@ -204,7 +204,9 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Option[Long] = p.fitestIndividual
+    val expected: None.type = p.fitestIndividual match {
+      case None => None
+    }
     assert(expected == None)
   }
 
@@ -217,8 +219,10 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Option[Long] = p.fitestIndividual
-    assert(expected == Some(25))
+    val expected: (Seq[Long], Long) = p.fitestIndividual match {
+      case Some((c, f)) => (c, f)
+    }
+    assert(expected == (Seq(4, 1, 2, 3), 25))
   }
 
   test(testName = "Fitest individual of Population with size 100") {
@@ -230,8 +234,10 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val expected: Option[Long] = p.fitestIndividual
-    assert(expected == Some(22))
+    val expected: Long = p.fitestIndividual match {
+      case Some((_, f: Long)) => f
+    }
+    assert(expected == 22)
   }
 
   test(testName = "Select parents form Population with size 0") {
