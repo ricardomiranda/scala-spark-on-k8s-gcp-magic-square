@@ -45,7 +45,7 @@ lazy val dependencies = Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    mainClass in (Compile, packageBin) := Some("com.ricardomiranda.sparkOnK8s"),
+    mainClass in (Compile, packageBin) := Some("com.ricardomiranda.magicsquare"),
     name := "Spark-on-k8s-Magic-Squares",
     libraryDependencies ++= dependencies
   )
