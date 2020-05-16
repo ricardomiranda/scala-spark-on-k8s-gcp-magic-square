@@ -2,7 +2,7 @@
   --class com.ricardomiranda.magicsquare.Main \
   --master local \
   --deploy-mode client \
-  /Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.12/spark-on-k8s-magic-squares.jar \
+  /Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
     -n magic_square \
     -m /Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_04_pop_50.json
 
@@ -11,7 +11,7 @@
   --class com.ricardomiranda.magicsquare.Main \
   --master local[*] \
   --deploy-mode client \
-  /media/cadoado/839c1b22-8791-46ad-a878-e500bc2f89e0/projects/langs/scala/scala-spark-on-k8s-gcp--magic-square/target/scala-2.12/spark-on-k8s-magic-squares.jar \
+  /media/cadoado/839c1b22-8791-46ad-a878-e500bc2f89e0/projects/langs/scala/scala-spark-on-k8s-gcp--magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
     -n magic_square \
     -m /media/cadoado/839c1b22-8791-46ad-a878-e500bc2f89e0/projects/langs/scala/scala-spark-on-k8s-gcp--magic-square/src/test/resources/magic_square_size_04_pop_50.json
 
