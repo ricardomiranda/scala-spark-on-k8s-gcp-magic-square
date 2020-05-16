@@ -1,10 +1,11 @@
 package com.ricardomiranda.magicsquare
 
 import org.scalatest._
+
 import scala.util.Random
 
 class IndividualTest
-    extends wordspec.AnyWordSpec
+  extends wordspec.AnyWordSpec
     with matchers.should.Matchers {
 
   "A new Individal " when {
@@ -17,7 +18,7 @@ class IndividualTest
 
         val expected: Option[Chromosome] = Chromosome(Seq(1))
 
-        actual.get.chromosome shouldBe expected.get
+        actual.get.chromosome.value() shouldBe expected.get.value()
       }
     }
 
@@ -52,7 +53,7 @@ class IndividualTest
 
         val expected: Option[Chromosome] = Chromosome(Seq(4, 1, 2, 3))
 
-        actual.get.chromosome shouldBe expected.get
+        actual.get.chromosome.value() shouldBe expected.get.value()
       }
     }
 
@@ -66,7 +67,7 @@ class IndividualTest
         val expected: Option[Chromosome] =
           Chromosome(Seq(4, 8, 3, 2, 1, 6, 5, 9, 7))
 
-        actual.get.chromosome shouldBe expected.get
+        actual.get.chromosome.value() shouldBe expected.get.value()
       }
     }
 
@@ -103,7 +104,7 @@ class IndividualTest
           Individual.mutation(0.0)(new Random(0L))(c.value)
 
         actual should contain theSameElementsInOrderAs (Vector(1, 2, 3, 4, 5, 6,
-            7, 8, 9))
+          7, 8, 9))
       }
     }
 
@@ -115,7 +116,7 @@ class IndividualTest
           Individual.mutation(1.0)(new Random(0L))(c.value)
 
         actual should contain theSameElementsInOrderAs (Vector(1, 5, 3, 4, 2, 6,
-            7, 8, 9))
+          7, 8, 9))
       }
     }
   }
@@ -141,7 +142,7 @@ class IndividualTest
           ).get
 
         actual.value should contain theSameElementsInOrderAs (Vector(1, 2, 3, 4,
-            5, 6, 7, 8, 9))
+          5, 6, 7, 8, 9))
       }
     }
 
@@ -166,7 +167,7 @@ class IndividualTest
           ).get
 
         actual.value should contain theSameElementsInOrderAs (Vector(9, 2, 3, 4,
-            5, 8, 7, 6, 1))
+          5, 8, 7, 6, 1))
       }
     }
 

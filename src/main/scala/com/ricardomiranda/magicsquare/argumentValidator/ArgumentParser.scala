@@ -2,11 +2,10 @@ package com.ricardomiranda.magicsquare.argumentValidator
 
 import java.nio.file.{Files, Paths}
 
+import com.google.cloud.storage.Storage.{BucketField, BucketGetOption}
+import com.google.cloud.storage.{Storage, StorageOptions}
 import scopt.OptionParser
 
-import spire.syntax.truncatedDivision
-
-import scala.sys.process._
 import scala.util.Try
 
 /** Case class for the config object.
@@ -16,10 +15,10 @@ import scala.util.Try
   *                                     Square  configuration.
   */
 case class ArgumentParser(
-    configs: Map[String, String] = Map(),
-    magicSquareConfigurationFile: String = "",
-    sparkAppName: String = "spark_magic_quare"
-)
+                           configs: Map[String, String] = Map(),
+                           magicSquareConfigurationFile: String = "",
+                           sparkAppName: String = "spark_magic_quare"
+                         )
 
 /** Object that parses the arguments received. */
 object ArgumentParser {
@@ -54,6 +53,18 @@ object ArgumentParser {
         .text("configs")
     }
 
+  /** Method to check if the value passed as argument exists, either locally or
+    * remotely.
+    *
+    * @param value The argument to check.
+    * @return True if the file exists, false if not.
+    */
+  def validateConfigFileExistance(value: String): Boolean = {
+    isLocalFileExists(filePath = value) || isRemoteAddressExists(address =
+      value
+    )
+  }
+
   /** Method to check if the json file received exists.
     *
     * @param filePath the json file to check.
@@ -67,25 +78,16 @@ object ArgumentParser {
     * @param address The address to check.
     * @return True if the address exists, false if not.
     */
-  def isRemoteAddressExists(address: String): Boolean = {
-    Try {
-      val cmd: Seq[String] = s"gsutil ls ${address}".split(" ").toSeq
-      cmd!
-    }.getOrElse(2) match {
-      case 0 => true
+  def isRemoteAddressExists(address: String): Boolean =
+    address match {
+      case x if x.startsWith("gs://") =>
+        val storage: Storage = StorageOptions.getDefaultInstance().getService()
+        Try {
+          (storage.get(x, BucketGetOption.fields(BucketField.ID)) != null)
+        }.toOption match {
+          case Some(x) => true
+          case None => false
+        }
       case _ => false
     }
-  }
-
-  /** Method to check if the value passed as argument exists, either locally or
-    * remotely.
-    *
-    * @param value The argument to check.
-    * @return True if the file exists, false if not.
-    */
-  def validateConfigFileExistance(value: String): Boolean = {
-    isLocalFileExists(filePath = value) || isRemoteAddressExists(address =
-      value
-    )
-  }
 }

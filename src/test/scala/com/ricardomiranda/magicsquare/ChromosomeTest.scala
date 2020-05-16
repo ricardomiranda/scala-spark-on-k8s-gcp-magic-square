@@ -1,10 +1,9 @@
 package com.ricardomiranda.magicsquare
 
 import org.scalatest._
-import breeze.linalg._
 
 class ChromosomeTest
-    extends wordspec.AnyWordSpec
+  extends wordspec.AnyWordSpec
     with matchers.should.Matchers {
   "A Chromosome" when {
     "Constructed with Seq()" should {
@@ -65,7 +64,7 @@ class ChromosomeTest
     "change a gene when given a valid input" in {
       val xs: Seq[Long] = Seq(1L)
       val c: Option[Chromosome] = Chromosome(xs)
-      c.get.modify(gene = 0L, pos = 0) shouldBe Chromosome(Seq(0L)).get
+      c.get.modify(gene = 0L, pos = 0).value() shouldBe Chromosome(Seq(0L)).get.value()
     }
   }
 }

@@ -1,10 +1,10 @@
 package com.ricardomiranda.magicsquare
 
-import org.scalatest._
 import breeze.linalg._
+import org.scalatest._
 
 class MagicSquareTest
-    extends wordspec.AnyWordSpec
+  extends wordspec.AnyWordSpec
     with matchers.should.Matchers {
   "A DenseMatrix" when {
     "chromosome Seq(1)" should {

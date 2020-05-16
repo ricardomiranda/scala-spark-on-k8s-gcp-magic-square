@@ -2,7 +2,9 @@ package com.ricardomiranda.magicsquare
 
 import com.typesafe.scalalogging.StrictLogging
 
-case class Chromosome(value: Seq[Long]) extends StrictLogging {
+class Chromosome(value: Seq[Long]) extends StrictLogging {
+
+  val this.value: Seq[Long] = value
 
   /**
     * Change gene in a specific position
@@ -13,11 +15,18 @@ case class Chromosome(value: Seq[Long]) extends StrictLogging {
     * @return Modified Chromosome
     */
   def modify(gene: Long, pos: Int): Chromosome = pos match {
-    case pos if 0 to (this.value.size - 1) contains pos =>
-      logger.debug(s"Chromosome modifying gene: ${gene} in position: ${pos}")
-      this.copy(value = this.value.updated(pos, gene))
+    case x: Int if 0 to (this.value.size - 1) contains x =>
+      logger.debug(s"Chromosome modifying gene: ${gene} in position: ${x}")
+      new Chromosome(value = this.value.updated(x, gene))
     case _ => this
   }
+
+  /**
+    * Retrive the chromosome value
+    *
+    * @return The chromosome
+    */
+  def value(): Seq[Long] = this.value
 }
 
 object Chromosome {
@@ -30,6 +39,6 @@ object Chromosome {
     */
   def apply(value: Seq[Long]): Option[Chromosome] = value match {
     case Nil => None
-    case xs  => Some(new Chromosome(value))
+    case xs: Seq[Long] => Some(new Chromosome(xs))
   }
 }

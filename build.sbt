@@ -1,4 +1,6 @@
-ThisBuild / scalaVersion := "2.12.11"
+import sbtassembly.AssemblyPlugin.autoImport.ShadeRule
+
+ThisBuild / scalaVersion := "2.11.11"
 ThisBuild / version := "1.0.0"
 ThisBuild / organizationName := "Spark Fireworks"
 
@@ -33,10 +35,10 @@ lazy val dependencies = Seq(
   "org.apache.spark" %% "spark-core" % "2.4.5" % Provided,
   // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
   "org.apache.spark" %% "spark-sql" % "2.4.5" % Provided,
+  // https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage
+  "com.google.cloud" % "google-cloud-storage" % "1.108.0" % Provided,
   // https://mvnrepository.com/artifact/com.typesafe.scala-logging/scala-logging
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-  // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-  "ch.qos.logback" % "logback-classic" % "1.3.0-alpha5",
   // https://mvnrepository.com/artifact/com.github.scopt/scopt
   "com.github.scopt" %% "scopt" % "4.0.0-RC2",
   // https://mvnrepository.com/artifact/io.spray/spray-json
@@ -45,7 +47,7 @@ lazy val dependencies = Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    mainClass in (Compile, packageBin) := Some("com.ricardomiranda.magicsquare"),
+    mainClass in(Compile, packageBin) := Some("com.ricardomiranda.magicsquare"),
     name := "Spark-on-k8s-Magic-Squares",
     libraryDependencies ++= dependencies
   )

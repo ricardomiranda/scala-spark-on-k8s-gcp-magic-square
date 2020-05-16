@@ -1,15 +1,10 @@
 package com.ricardomiranda.magicsquare
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.DataFrame
 import org.scalatest._
 
 import scala.util.Random
-import shapeless.Data
-import checkers.units.quals.s
-import com.holdenkarau.spark.testing.DataframeGenerator
 
 class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "empty dataframe") {
@@ -327,10 +322,10 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val parents: DataFrame =
       p.selectParents(
-          nbrOfOffspring = 2,
-          randomGenerator = new Random(0),
-          tournamentSize = 2
-        )
+        nbrOfOffspring = 2,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
         .get
 
     val actual: DataFrame = p.offspring(
@@ -354,10 +349,10 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val parents: DataFrame =
       p.selectParents(
-          nbrOfOffspring = 190,
-          randomGenerator = new Random(0),
-          tournamentSize = 5
-        )
+        nbrOfOffspring = 190,
+        randomGenerator = new Random(0),
+        tournamentSize = 5
+      )
         .get
 
     val actual: DataFrame = p.offspring(
