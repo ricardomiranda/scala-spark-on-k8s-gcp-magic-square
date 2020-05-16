@@ -3,7 +3,7 @@ package com.ricardomiranda.magicsquare.argumentValidator
 import org.scalatest._
 
 class ArgumentParserSpec
-    extends wordspec.AnyWordSpec
+  extends wordspec.AnyWordSpec
     with matchers.should.Matchers {
 
   val wellFormedArguments: Seq[String] = Seq(

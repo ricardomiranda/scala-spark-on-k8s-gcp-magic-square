@@ -9,20 +9,6 @@ import scala.util.Try
 object MagicSquare {
 
   /**
-    * Returns a denseMatrix from a Chromosome, requires a Chromosome with a
-    * size suitable to be turned into a square
-    *
-    * @param chromosome A Chromosome
-    * @return Option[DenseMatrix]
-    */
-  def matrix(chromosome: Chromosome): Option[DenseMatrix[Long]] = {
-    Try {
-      val n: Int = sqrt(chromosome.value.size).toInt
-      DenseMatrix(chromosome.value.grouped(n).toSeq: _*)
-    }.toOption
-  }
-
-  /**
     * This computation is the fitness of a Individual
     *
     * @param chromosome A Chromosome
@@ -43,7 +29,7 @@ object MagicSquare {
 
           @tailrec
           def loop(xs: Seq[Long], acc: Long): Long = xs match {
-            case Seq(x)       => acc
+            case Seq(x) => acc
             case x :: y :: xs => loop(y :: xs, acc + sqr(x - y))
           }
 
@@ -51,4 +37,18 @@ object MagicSquare {
         }.toOption
       case None => None
     }
+
+  /**
+    * Returns a denseMatrix from a Chromosome, requires a Chromosome with a
+    * size suitable to be turned into a square
+    *
+    * @param chromosome A Chromosome
+    * @return Option[DenseMatrix]
+    */
+  def matrix(chromosome: Chromosome): Option[DenseMatrix[Long]] = {
+    Try {
+      val n: Int = sqrt(chromosome.value.size).toInt
+      DenseMatrix(chromosome.value.grouped(n).toSeq: _*)
+    }.toOption
+  }
 }

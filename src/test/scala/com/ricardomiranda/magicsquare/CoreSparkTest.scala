@@ -1,7 +1,6 @@
 package com.ricardomiranda.magicsquare
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 import org.scalatest._
