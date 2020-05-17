@@ -8,7 +8,7 @@
     "gcp_dataset": "magic_squares",
     "table": "results"
   }, 
-  "popSize": 50,
-  "sideSize": 4,
+  "popSize": 10,
+  "sideSize": 2,
   "tournamentSize": 4
 }

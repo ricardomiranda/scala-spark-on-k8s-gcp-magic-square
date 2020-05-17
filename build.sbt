@@ -25,6 +25,8 @@ lazy val dependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.3.0-SNAP2" % Test,
   // https://mvnrepository.com/artifact/com.holdenkarau/spark-testing-base
   "com.holdenkarau" %% "spark-testing-base" % "2.4.5_0.14.0" % Test,
+  // https://mvnrepository.com/artifact/org.scalanlp/breeze
+  "org.scalanlp" %% "breeze" % "1.0",
   // https://mvnrepository.com/artifact/org.apache.spark/spark-core
   "org.apache.spark" %% "spark-core" % "2.4.5" % Provided,
   // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
