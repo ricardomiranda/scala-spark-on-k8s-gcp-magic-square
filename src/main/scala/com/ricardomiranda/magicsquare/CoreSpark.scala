@@ -4,6 +4,12 @@ import org.apache.spark.sql.functions.{col, concat_ws}
 import org.apache.spark.sql.{Column, DataFrame}
 
 object CoreSpark {
+
+  /** Method to create a DataFrame hash 
+   * 
+   * @param dataFrame  The DataFrame to hash
+   * @return A String with a hash for the DataFrame
+   */
   def hashed_dataframe(df: DataFrame): Int = {
     val selection: Array[Column] = df.columns.map(col)
     val joined_values: String = "joined_values"

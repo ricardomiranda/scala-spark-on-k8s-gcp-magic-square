@@ -25,18 +25,14 @@ lazy val dependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.3.0-SNAP2" % Test,
   // https://mvnrepository.com/artifact/com.holdenkarau/spark-testing-base
   "com.holdenkarau" %% "spark-testing-base" % "2.4.5_0.14.0" % Test,
-  // https://mvnrepository.com/artifact/org.scalanlp/breeze
-  "org.scalanlp" %% "breeze" % "1.0",
-  // https://mvnrepository.com/artifact/org.scalanlp/breeze-viz
-  "org.scalanlp" %% "breeze-viz" % "1.0",
-  // https://mvnrepository.com/artifact/org.scalanlp/breeze-natives
-  "org.scalanlp" %% "breeze-natives" % "1.0",
   // https://mvnrepository.com/artifact/org.apache.spark/spark-core
   "org.apache.spark" %% "spark-core" % "2.4.5" % Provided,
   // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
   "org.apache.spark" %% "spark-sql" % "2.4.5" % Provided,
   // https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage
   "com.google.cloud" % "google-cloud-storage" % "1.108.0" % Provided,
+  // https://mvnrepository.com/artifact/com.google.cloud.spark/spark-bigquery
+  "com.google.cloud.spark" %% "spark-bigquery" % "0.15.1-beta" % Provided,
   // https://mvnrepository.com/artifact/com.typesafe.scala-logging/scala-logging
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   // https://mvnrepository.com/artifact/com.github.scopt/scopt
