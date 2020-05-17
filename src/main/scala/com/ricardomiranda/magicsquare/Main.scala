@@ -1,12 +1,14 @@
 package com.ricardomiranda.magicsquare
 
+import java.util.UUID
+
 import com.ricardomiranda.magicsquare.argumentValidator.ArgumentParser
 import com.ricardomiranda.magicsquare.core.CoreBigQuery
 import com.typesafe.scalalogging.StrictLogging
-import java.util.UUID
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.SparkFiles
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import scala.annotation.tailrec
 
 case class Result(
@@ -62,7 +64,7 @@ object Main extends App with StrictLogging {
 
   val b: Option[(Seq[Long], Long)] = iniPopulation.fitestIndividual
   val firstResult: Result = Result(
-    bestIndividualChromosome = MagicSquare.matrix(Chromosome(b.get._1).get).get,
+    bestIndividualChromosome = b.get._1,
     fitness = b.get._2,
     lineNbr = 0,
     populationFitness = iniPopulation

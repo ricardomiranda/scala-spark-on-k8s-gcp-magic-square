@@ -1,27 +1,22 @@
-./bin/spark-submit \
-  --class com.ricardomiranda.magicsquare.Main \
-  --master local \
-  --deploy-mode client \
-  /Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
-    -n magic_square \
-    -m /Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_04_pop_50.json
-
-
-./bin/spark-submit \
-  --class com.ricardomiranda.magicsquare.Main \
-  --master local[*] \
-  --deploy-mode client \
-  /media/cadoado/839c1b22-8791-46ad-a878-e500bc2f89e0/projects/langs/scala/scala-spark-on-k8s-gcp--magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
-    -n magic_square \
-    -m /media/cadoado/839c1b22-8791-46ad-a878-e500bc2f89e0/projects/langs/scala/scala-spark-on-k8s-gcp--magic-square/src/test/resources/magic_square_size_04_pop_50.json
-
 gcloud dataproc jobs submit spark \
   --cluster hsbc-dev-dataproc-opsml \
   --class com.ricardomiranda.magicsquare.Main \
   --files=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_04_pop_50.json \
-  --jars=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
+  --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.11.jar,/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
   --region=europe-west2 \
   -- \
     -n magic_square \
-    -m magic_square_size_04_pop_50.json
+    -m magic_square_size_04_pop_50.json \
+    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev
 
+
+gcloud dataproc jobs submit spark \
+  --cluster hsbc-dev-dataproc-opsml \
+  --class com.ricardomiranda.magicsquare.Main \
+  --files=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_02_pop_10.json \
+  --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.11.jar,/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
+  --region=europe-west2 \
+  -- \
+    -n magic_square \
+    -m magic_square_size_02_pop_10.json \
+    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev
