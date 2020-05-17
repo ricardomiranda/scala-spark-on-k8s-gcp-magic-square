@@ -1,18 +1,20 @@
 package com.ricardomiranda.magicsquare
 
-import breeze.plot._
 import com.ricardomiranda.magicsquare.argumentValidator.ArgumentParser
+import com.ricardomiranda.magicsquare.core.CoreBigQuery
 import com.typesafe.scalalogging.StrictLogging
+import java.util.UUID
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.SparkFiles
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import scala.annotation.tailrec
 
 case class Result(
-    lineNbr: Int,
+    bestIndividualChromosome: Seq[Long],
     fitness: Long,
-    newGenerationPopulationFitness: Double,
-    bestIndividualChromosome: Seq[Long]
+    lineNbr: Int,
+    populationFitness: Double,
+    runID: String
 )
 
 object Main extends App with StrictLogging {
@@ -27,6 +29,9 @@ object Main extends App with StrictLogging {
     }
 
   logger.info("All input arguments were correctly parsed")
+
+  // ID for current run
+  val runID: String = UUID.randomUUID.toString
 
   val sparkSession: SparkSession = Computation.createSparkSession(
     configs = arguments.configs,
@@ -55,38 +60,36 @@ object Main extends App with StrictLogging {
       sparkSession = sparkSession
     )
 
-  logger.info("Initial solution is:")
   val b: Option[(Seq[Long], Long)] = iniPopulation.fitestIndividual
-  logger.info(s"""
-    fitness: ${b.get._2}
-    ${MagicSquare.matrix(Chromosome(b.get._1).get).get.toString}
-    """)
-
-  val results: Seq[Result] = Computation.loop(
-    0,
-    magicSquareConfigs.iter,
-    iniPopulation,
-    Seq(),
-    magicSquareConfigs
+  val firstResult: Result = Result(
+    bestIndividualChromosome = MagicSquare.matrix(Chromosome(b.get._1).get).get,
+    fitness = b.get._2,
+    lineNbr = 0,
+    populationFitness = iniPopulation
+      .populationFitness(percentile = magicSquareConfigs.percentile)
+      .get,
+    runID = runID
   )
 
-  logger.info("Final solution is:")
-  logger.info(s"""
-    fitness: ${results.head.fitness}
-    ${MagicSquare
-    .matrix(Chromosome(results.head.bestIndividualChromosome).get)
-    .get
-    .toString}
-      """)
+  // Solving the problem
+  val results: Seq[Result] = Computation.loop(
+    acc = Seq(firstResult),
+    iterToGo = magicSquareConfigs.iter,
+    n = 0,
+    magicSquareConfigs = magicSquareConfigs,
+    population = iniPopulation,
+    runID = runID
+  )
+
+  Computation.finalOutput(
+    magicSquareConfigs = magicSquareConfigs,
+    results = results,
+    sparkSession = sparkSession
+  )
 
   logger.info("Program terminated")
   val t1 = System.nanoTime()
   logger.info("Elapsed time: " + (t1 - t0) + "ns")
-
-  Computation.finalOutput(
-    results = results,
-    sideSize = magicSquareConfigs.sideSize
-  )
 
   sparkSession.stop()
 }
@@ -118,7 +121,8 @@ case object Computation extends StrictLogging {
 
   /**
     * Creates a spark session using the provided configurations.
-    * Should the configurations be empty, the default spark session will be returned.
+    * Should the configurations be empty, the default spark session will be 
+    * returned.
     *
     * @param configs provided configurations.
     * @return a configured spark session.
@@ -143,28 +147,17 @@ case object Computation extends StrictLogging {
     * Print final program results
     *
     * @param results  Sequence o Results stroed during the computation
-    * @param sideSize Magic square side size
     */
-  def finalOutput(results: Seq[Result], sideSize: Int): Unit = {
-    logger.info(s"With fitness: ${results.head.fitness}")
-
-    val fig = Figure()
-    val plt = fig.subplot(0)
-    plt += plot(
-      results.map(x => x.lineNbr),
-      results.map(x => x.fitness.toInt),
-      name = "Best individual"
-    )
-    plt += plot(
-      results.map(x => x.lineNbr),
-      results.map(x => x.newGenerationPopulationFitness.toInt),
-      name = "Population"
-    )
-    plt.xlabel = "Iterations"
-    plt.ylabel = "Fitness"
-    plt.title = s"Magic square with size ${sideSize} fitness"
-    plt.legend = true
-    fig.refresh()
+  def finalOutput(
+      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
+      results: Seq[Result],
+      sparkSession: SparkSession
+  ): Unit = {
+    import sparkSession.implicits._
+    val df: DataFrame = results.toDF
+    val table: String =
+      s"${magicSquareConfigs.persistence.gcp_dataset}.${magicSquareConfigs.persistence.table}"
+    CoreBigQuery.insertIntoBigQueryTable(dataFrame = df, table = table)
   }
 
   /**
@@ -178,11 +171,12 @@ case object Computation extends StrictLogging {
     */
   @tailrec
   def loop(
-      n: Int,
-      iterToGo: Int,
-      population: Population,
       acc: Seq[Result],
-      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration
+      iterToGo: Int,
+      n: Int,
+      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
+      population: Population,
+      runID: String
   ): Seq[Result] = iterToGo match {
 
     case 0 => acc
@@ -197,27 +191,27 @@ case object Computation extends StrictLogging {
           )
 
       val b: Option[(Seq[Long], Long)] = newGeneration.fitestIndividual
-
       val result: Result =
         Result(
-          lineNbr = n,
+          bestIndividualChromosome = b.get._1,
           fitness = b.get._2,
-          newGenerationPopulationFitness = newGeneration
+          lineNbr = n,
+          populationFitness = newGeneration
             .populationFitness(percentile = magicSquareConfigs.percentile)
             .get,
-          bestIndividualChromosome = b.get._1
+          runID = runID
         )
 
-      val percent: Double =
-        100.0 - n.toDouble / magicSquareConfigs.iter.toDouble * 100.0
-      if (n % magicSquareConfigs.output == 0)
-        logger.info(
-          s"""
-          Remainig: ${percent}%, best individual: ${b.get._2}, 
-          population size = ${magicSquareConfigs.popSize}"""
-        )
-
-      loop(n + 1, if (b.get._2 == 0) { 0 }
-      else { iterToGo - 1 }, newGeneration, result +: acc, magicSquareConfigs)
+      // Continues if solution was not found and did not reach the max number 
+      // of iterations
+      loop(
+        acc = result +: acc,
+        iterToGo = if (b.get._2 == 0) { 0 }
+        else { iterToGo - 1 },
+        n = n + 1,
+        magicSquareConfigs = magicSquareConfigs,
+        population = newGeneration,
+        runID = runID
+      )
   }
 }
