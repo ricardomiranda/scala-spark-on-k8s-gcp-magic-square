@@ -6,14 +6,14 @@ import com.typesafe.scalalogging.StrictLogging
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.SparkFiles
 import org.apache.spark.sql.SparkSession
+import scala.annotation.tailrec
 
 case class Result(
-                   lineNbr: Int,
-                   fitness: Int,
-                   newGenerationPopulationFitness: Double,
-                   newGenerationIndividualsCount: Int,
-                   bestIndividualChromosome: Option[Seq[Long]]
-                 )
+    lineNbr: Int,
+    fitness: Long,
+    newGenerationPopulationFitness: Double,
+    bestIndividualChromosome: Seq[Long]
+)
 
 object Main extends App with StrictLogging {
 
@@ -23,7 +23,7 @@ object Main extends App with StrictLogging {
   val arguments: ArgumentParser =
     ArgumentParser.parser.parse(args, ArgumentParser()) match {
       case Some(config) => config
-      case None => throw new IllegalArgumentException()
+      case None         => throw new IllegalArgumentException()
     }
 
   logger.info("All input arguments were correctly parsed")
@@ -47,7 +47,7 @@ object Main extends App with StrictLogging {
         magicSquareConfigurationFilePath
       )
 
-  val iniPopulation =
+  val iniPopulation: Population =
     Population(
       chromosomeSize =
         (magicSquareConfigs.sideSize * magicSquareConfigs.sideSize).toLong,
@@ -55,35 +55,38 @@ object Main extends App with StrictLogging {
       sparkSession = sparkSession
     )
 
-  // logger.info("Initial solution is:")
-  // logger.info(
-  //   MagicSquare(iniPopulation).m.toString
-  // )
-  // logger.info(
-  //   s"With fitness: ${iniPopulation.individuals.sortByKey().first._1}"
-  // )
+  logger.info("Initial solution is:")
+  val b: Option[(Seq[Long], Long)] = iniPopulation.fitestIndividual
+  logger.info(s"""
+    fitness: ${b.get._2}
+    ${MagicSquare.matrix(Chromosome(b.get._1).get).get.toString}
+    """)
 
-  //   val result: Seq[Result] = Computation.loop(
-  //     0,
-  //     magicSquareConfigs.iter,
-  //     iniPopulation,
-  //     Seq(),
-  //     magicSquareConfigs
-  //   )
+  val results: Seq[Result] = Computation.loop(
+    0,
+    magicSquareConfigs.iter,
+    iniPopulation,
+    Seq(),
+    magicSquareConfigs
+  )
 
-  //   result.head.bestIndividualChromosome match {
-  //     case Some(chromosome) => logger.info(MagicSquare(chromosome).m.toString)
-  //     case _                =>
-  //   }
-
-  // Computation.finalOutput(
-  //   result = result,
-  //   sideSize = magicSquareConfigs.sideSize
-  // )
+  logger.info("Final solution is:")
+  logger.info(s"""
+    fitness: ${results.head.fitness}
+    ${MagicSquare
+    .matrix(Chromosome(results.head.bestIndividualChromosome).get)
+    .get
+    .toString}
+      """)
 
   logger.info("Program terminated")
   val t1 = System.nanoTime()
   logger.info("Elapsed time: " + (t1 - t0) + "ns")
+
+  Computation.finalOutput(
+    results = results,
+    sideSize = magicSquareConfigs.sideSize
+  )
 
   sparkSession.stop()
 }
@@ -98,9 +101,9 @@ case object Computation extends StrictLogging {
     * @return The file path of the file in the Spark session.
     */
   def addFileToSparkContext(
-                             filePath: String,
-                             sparkSession: SparkSession
-                           ): String = {
+      filePath: String,
+      sparkSession: SparkSession
+  ): String = {
     logger.info(s"Add file ${filePath} to Spark Session")
 
     sparkSession.sparkContext.addFile(filePath)
@@ -121,9 +124,9 @@ case object Computation extends StrictLogging {
     * @return a configured spark session.
     */
   def createSparkSession(
-                          configs: Map[String, String],
-                          sparkAppName: String
-                        ): SparkSession = {
+      configs: Map[String, String],
+      sparkAppName: String
+  ): SparkSession = {
     logger.info(s"Creating Spark Session with name $sparkAppName")
 
     val builder =
@@ -139,22 +142,22 @@ case object Computation extends StrictLogging {
   /**
     * Print final program results
     *
-    * @param result   Sequence o Results stroed during the computation
+    * @param results  Sequence o Results stroed during the computation
     * @param sideSize Magic square side size
     */
-  def finalOutput(result: Seq[Result], sideSize: Int): Unit = {
-    logger.info(s"With fitness: ${result.head.fitness}")
+  def finalOutput(results: Seq[Result], sideSize: Int): Unit = {
+    logger.info(s"With fitness: ${results.head.fitness}")
 
     val fig = Figure()
     val plt = fig.subplot(0)
     plt += plot(
-      result.map(x => x.lineNbr),
-      result.map(x => x.fitness),
+      results.map(x => x.lineNbr),
+      results.map(x => x.fitness.toInt),
       name = "Best individual"
     )
     plt += plot(
-      result.map(x => x.lineNbr),
-      result.map(x => x.newGenerationPopulationFitness.toInt),
+      results.map(x => x.lineNbr),
+      results.map(x => x.newGenerationPopulationFitness.toInt),
       name = "Population"
     )
     plt.xlabel = "Iterations"
@@ -164,66 +167,57 @@ case object Computation extends StrictLogging {
     fig.refresh()
   }
 
-  //   /**
-  //     * This the main program loop
-  //     *
-  //     * @param n          curent iteration
-  //     * @param iterToGo   remaining iterations
-  //     * @param population current population
-  //     * @param acc        Seq[Result]
-  //     * @return Seq[Result]
-  //     */
-  //   @tailrec
-  //   def loop(
-  //       n: Int,
-  //       iterToGo: Int,
-  //       population: Population,
-  //       acc: Seq[Result],
-  //       magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration
-  //   ): Seq[Result] = iterToGo match {
+  /**
+    * This the main program loop
+    *
+    * @param n          curent iteration
+    * @param iterToGo   remaining iterations
+    * @param population current population
+    * @param acc        Seq[Result]
+    * @return Seq[Result]
+    */
+  @tailrec
+  def loop(
+      n: Int,
+      iterToGo: Int,
+      population: Population,
+      acc: Seq[Result],
+      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration
+  ): Seq[Result] = iterToGo match {
 
-  //     case 0 => acc
-  //     case _ =>
-  //       val newGeneration =
-  //         population
-  //           .newGeneration(
-  //             magicSquareConfigs.elite,
-  //             magicSquareConfigs.tournamentSize,
-  //             magicSquareConfigs.mutationRate,
-  //             magicSquareConfigs.crossoverRate
-  //           )
+    case 0 => acc
+    case _ =>
+      val newGeneration: Population =
+        population
+          .newGeneration(
+            crossoverRate = magicSquareConfigs.crossoverRate,
+            elite = magicSquareConfigs.elite,
+            mutationRate = magicSquareConfigs.mutationRate,
+            tournamentSize = magicSquareConfigs.tournamentSize
+          )
 
-  //       newGeneration.calcFitness
+      val b: Option[(Seq[Long], Long)] = newGeneration.fitestIndividual
 
-  //       val bestIndividual: (Int, Option[Individual]) =
-  //         newGeneration.bestFitness match {
-  //           case 0 =>
-  //             val bi = newGeneration.individuals.sortByKey().first
-  //             (bi._1, Some(bi._2))
-  //           case bestFitness => (bestFitness, None)
-  //         }
+      val result: Result =
+        Result(
+          lineNbr = n,
+          fitness = b.get._2,
+          newGenerationPopulationFitness = newGeneration
+            .populationFitness(percentile = magicSquareConfigs.percentile)
+            .get,
+          bestIndividualChromosome = b.get._1
+        )
 
-  //       val result: Result =
-  //         Result(
-  //           lineNbr = n,
-  //           fitness = bestIndividual._1,
-  //           newGenerationPopulationFitness =
-  //             newGeneration.populationFitness(magicSquareConfigs.percentile),
-  //           newGenerationIndividualsCount = newGeneration.individuals.count.toInt,
-  //           bestIndividualChromosome = bestIndividual._2 match {
-  //             case Some(bi) => Some(bi.chromosome)
-  //             case None     => None
-  //           }
-  //         )
+      val percent: Double =
+        100.0 - n.toDouble / magicSquareConfigs.iter.toDouble * 100.0
+      if (n % magicSquareConfigs.output == 0)
+        logger.info(
+          s"""
+          Remainig: ${percent}%, best individual: ${b.get._2}, 
+          population size = ${magicSquareConfigs.popSize}"""
+        )
 
-  // val percent =
-  //   100.0 - n.toDouble / magicSquareConfigs.iter.toDouble * 100.0
-  // if (n % magicSquareConfigs.output == 0)
-  //   logger.info(
-  //     s"Remainig: ${percent}%, best individual: ${bestIndividual._1}, population size = ${population.individuals.count}"
-  //   )
-
-  // loop(n + 1, if (bestIndividual._1 == 0) { 0 }
-  // else { iterToGo - 1 }, newGeneration, result +: acc, magicSquareConfigs)
-  // }
+      loop(n + 1, if (b.get._2 == 0) { 0 }
+      else { iterToGo - 1 }, newGeneration, result +: acc, magicSquareConfigs)
+  }
 }
