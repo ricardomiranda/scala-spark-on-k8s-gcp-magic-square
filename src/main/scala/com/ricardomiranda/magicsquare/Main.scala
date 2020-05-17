@@ -86,6 +86,7 @@ object Main extends App with StrictLogging {
   Computation.finalOutput(
     magicSquareConfigs = magicSquareConfigs,
     results = results,
+    runID= runID,
     sparkSession = sparkSession
   )
 
@@ -153,8 +154,10 @@ case object Computation extends StrictLogging {
   def finalOutput(
       magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
       results: Seq[Result],
+      runID: String,
       sparkSession: SparkSession
   ): Unit = {
+    logger.info(s"Wruting results for run: ${runID}")
     import sparkSession.implicits._
     val df: DataFrame = results.toDF
     val table: String =
