@@ -97,10 +97,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Tournament selection from Population with size 0") {
+
+    val popSize: Long = 0
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 0,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -108,6 +111,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
       )
@@ -115,10 +119,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Tournament selection from Population with size 1") {
+
+    val popSize: Long = 0
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 1,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -126,6 +133,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
       )
@@ -135,10 +143,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName =
     "Tournament selection of 2 parents from Population with size 2"
   ) {
+
+    val popSize: Long = 2
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 2,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -146,36 +157,25 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
       )
 
-    val expected: Some[DataFrame] =
-      Some(
-        spark
-          .createDataFrame(
-            Seq(
-              (Chromosome(Seq(2, 1, 4, 3)).get.value, 25),
-              (Chromosome(Seq(2, 1, 4, 3)).get.value, 25)
-            )
-          )
-          .toDF("chromosome", "fitness")
-      )
 
-    assert(
-      CoreSpark.hashed_dataframe(actual.get) == CoreSpark.hashed_dataframe(
-        expected.get
-      )
-    )
+    assert(CoreSpark.hashed_dataframe(actual.get) == 2015914712)
   }
 
   test(testName =
     "Tournament selection with size 5 of 10 parents from of Population with size 100"
   ) {
+
+    val popSize: Long = 100
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 100,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -183,11 +183,12 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 10,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 5
       )
 
-    assert(CoreSpark.hashed_dataframe(actual.get) == 1254853226)
+    assert(CoreSpark.hashed_dataframe(actual.get) == 181090392)
   }
 
   test(testName = "Fitest individual of Population with size 0") {
@@ -236,10 +237,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Select parents form Population with size 0") {
+
+    val popSize: Long = 0
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 0,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -247,6 +251,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val expected: Option[DataFrame] =
       p.selectParents(
         nbrOfOffspring = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 2
       )
@@ -254,10 +259,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Select parents form Population with size 1") {
+
+    val popSize: Long = 1
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 1,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -265,6 +273,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val expected: Option[DataFrame] =
       p.selectParents(
         nbrOfOffspring = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 2
       )
@@ -272,10 +281,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Select parents for 1 offspring form Population with size 2") {
+
+    val popSize: Long = 2
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 2,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -283,6 +295,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val expected: Option[DataFrame] =
       p.selectParents(
         nbrOfOffspring = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 2
       )
@@ -291,12 +304,15 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName =
-    "Select parents for 5 offspring form Population with size 2000"
+    "Select parents for 5 offspring form Population with size 20000"
   ) {
+
+    val popSize: Long = 20000
+
     val p: Population =
       Population(
         chromosomeSize = 9,
-        populationSize = 20000,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -304,6 +320,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val expected: Option[DataFrame] =
       p.selectParents(
         nbrOfOffspring = 5,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 5
       )
@@ -312,10 +329,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Offspring from population of 2") {
+
+    val popSize: Long = 2
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 2,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -323,6 +343,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val parents: DataFrame =
       p.selectParents(
         nbrOfOffspring = 2,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 2
       )
@@ -335,14 +356,17 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       randomGenerator = new Random(0)
     )
 
-    assert(CoreSpark.hashed_dataframe(actual) == -1544732213)
+    assert(CoreSpark.hashed_dataframe(actual) == -1791597621)
   }
 
   test(testName = "190 offspring from population of 200") {
+
+    val popSize: Long = 200
+
     val p: Population =
       Population(
         chromosomeSize = 9,
-        populationSize = 200,
+        populationSize = popSize.toInt,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -350,6 +374,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
     val parents: DataFrame =
       p.selectParents(
         nbrOfOffspring = 190,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 5
       )
@@ -362,10 +387,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
       randomGenerator = new Random(0)
     )
 
-    assert(
-      CoreSpark
-        .hashed_dataframe(actual.orderBy("fitness", "chromosome")) == -589824148
-    )
+    assert(CoreSpark.hashed_dataframe(actual.orderBy("fitness", "chromosome")) == -2013673982)
   }
 
   test(testName = "Generate a new generation of 2 with 0 offspring") {
@@ -404,13 +426,14 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
-    val actual: Population = p.newGeneration(
-      crossoverRate = 1.0,
-      elite = 2,
-      mutationRate = 0.05,
-      randomGenerator = new Random(0),
-      tournamentSize = 2
-    )
+    val actual: Population =
+      p.newGeneration(
+        crossoverRate = 1.0,
+        elite = 2,
+        mutationRate = 0.05,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
 
     assert(actual.individuals.count() == 4)
   }

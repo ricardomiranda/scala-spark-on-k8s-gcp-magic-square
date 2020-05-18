@@ -77,7 +77,7 @@ object Main extends App with StrictLogging {
   val results: Seq[Result] = Computation.loop(
     acc = Seq(firstResult),
     iterToGo = magicSquareConfigs.iter,
-    n = 0,
+    n = 1,
     magicSquareConfigs = magicSquareConfigs,
     population = iniPopulation,
     runID = runID
@@ -157,7 +157,7 @@ case object Computation extends StrictLogging {
       runID: String,
       sparkSession: SparkSession
   ): Unit = {
-    logger.info(s"Wruting results for run: ${runID}")
+    logger.info(s"Writing results for run: ${runID}")
     import sparkSession.implicits._
     val df: DataFrame = results.toDF
     val table: String =
@@ -211,7 +211,7 @@ case object Computation extends StrictLogging {
       // of iterations
       loop(
         acc = result +: acc,
-        iterToGo = if (b.get._2 == 0) { 0 }
+        iterToGo = if (b.get._2 <= 0) { 0 }
         else { iterToGo - 1 },
         n = n + 1,
         magicSquareConfigs = magicSquareConfigs,
