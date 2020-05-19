@@ -3,9 +3,9 @@ package com.ricardomiranda.magicsquare
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{rand, sum, udf}
+import org.apache.spark.sql.functions.{sum, udf}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.mutable.WrappedArray
 import scala.util.Random
@@ -24,7 +24,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       case df =>
         logger.debug(s"Computing top fitness")
         val r: Row =
-          this.individuals
+          df
             .orderBy("fitness")
             .limit(1)
             .head
@@ -47,43 +47,41 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
                      elite: Int,
                      mutationRate: Double,
                      randomGenerator: Random = new Random,
+                     popSize: Long,
                      tournamentSize: Int
                    ): Population = {
 
     // Checkpointing Population to reduce DAG
     this.individuals.cache()
-//    val checkpointDir: String = "hdfs://tmp/checkpoints"
-//    sparkSession.sparkContext.setCheckpointDir(checkpointDir)
-//    val checkPointedPopulation: Dataset[Row] = this.individuals.checkpoint(eager = true)
-
-    val popSize: Long = this.individuals.count()
+    //    val checkpointDir: String = "/tmp/checkpoints"
+    //    sparkSession.sparkContext.setCheckpointDir(checkpointDir)
+    //    val checkPointedPopulation: Dataset[Row] =  this.individuals.checkpoint(eager = true)
 
     val elitePopulation: DataFrame = this.individuals.orderBy("fitness").limit(elite)
 
-    val offspringPopulation: DataFrame = popSize - elite match {
+    val offspringPopulation: DataFrame = (popSize - elite) match {
       case n if n == 0 =>
         sparkSession.createDataFrame(
           sparkSession.sparkContext.emptyRDD[Row],
           elitePopulation.schema
         )
       case n =>
-        offspring(
+        this.offspring(
           crossoverRate = crossoverRate,
           mutationRate = mutationRate,
-          parents = this
-            .selectParents(
+          parents =
+            this.selectParents(
               nbrOfOffspring = n,
               popSize = popSize,
               randomGenerator = randomGenerator,
               tournamentSize = tournamentSize
             )
-            .get,
+              .get,
           randomGenerator = randomGenerator
         )
     }
 
     this.individuals.unpersist()
-
     this.copy(individuals = offspringPopulation.union(elitePopulation))
   }
 
@@ -106,16 +104,9 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       s"Generating offspring for the new generation."
     )
 
-    val crossoverUDF: UserDefinedFunction = udf(
-      Individual.crossover(crossoverRate)(randomGenerator)
-    )
+    val crossoverUDF: UserDefinedFunction = udf(Individual.crossover(crossoverRate)(randomGenerator))
 
-    val f: Seq[Long] => Long =
-      Individual.calcFitness compose Individual.mutation(mutationRate)(
-        randomGenerator
-      )
-
-    val fUDF: UserDefinedFunction = udf(f)
+    val fUDF: UserDefinedFunction = udf(Individual.calcFitness compose Individual.mutation(mutationRate)(randomGenerator))
 
     val df: DataFrame =
       parents
@@ -155,7 +146,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
       )
 
       val pRDD: RDD[(Row, Long)] =
-        tournamentSelection(
+        this.tournamentSelection(
           nbrOfParents = nbrOfOffspring,
           popSize = popSize,
           randomGenerator = randomGenerator,
@@ -163,9 +154,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
         ).get
           .zipWithIndex
 
-      sparkSession.createDataFrame(pRDD.map {
-        case (r, i) => Row.fromSeq(r.toSeq ++ Seq(i))
-      }, struct)
+      sparkSession.createDataFrame(pRDD.map { case (r, i) => Row.fromSeq(r.toSeq ++ Seq(i)) }, struct)
     }
 
     popSize match {
@@ -195,7 +184,7 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * @param popSize         Population size
     * @param randomGenerator Random generator
     * @param tournamentSize  tournament size
-    * @return Option DataFrame with selected Individuals
+    * @return Option Dataframe with selected Individuals
     */
   def tournamentSelection(
                            nbrOfParents: Long,
@@ -203,9 +192,10 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
                            randomGenerator: Random = new Random,
                            tournamentSize: Int
                          ): Option[RDD[Row]] =
-    this.individuals match {
-      case _ if popSize < 2 => None
-      case _ =>
+
+    popSize match {
+      case x if x < 2 => None
+      case x =>
         logger.debug(
           s"Tournament selection with tournament size: ${tournamentSize}"
         )
@@ -213,9 +203,8 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
 
         Some((1L to nbrOfParents)
           .map(_ =>
-            this
-              .individuals
-              .sample(false, tournamentSize.toDouble / popSize.toDouble, seed)
+            this.individuals
+              .sample(false, tournamentSize.toDouble / x.toDouble, seed)
               .limit(tournamentSize)
               .orderBy("fitness")
               .limit(1)
@@ -230,11 +219,11 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
     * @param percentile Percentile of the Population to use to compute fitness
     * @return Option of Population fitness
     */
-  def populationFitness(percentile: Double): Option[Double] =
+  def populationFitness(percentile: Double, popSize: Long): Option[Double] =
     this.individuals match {
       case df if df.isEmpty => None
       case df =>
-        val percentilePop: Int = (percentile * df.count).toInt + 1
+        val percentilePop: Int = (percentile * popSize.toDouble).toInt + 1
         logger.debug(
           s"Computing Population fitness for percentile: ${percentile}"
         )
