@@ -2,6 +2,7 @@ package com.ricardomiranda.magicsquare
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.{ArrayType, LongType, StructField, StructType}
 import org.scalatest._
 
 import scala.util.Random
@@ -114,7 +115,9 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
-      )
+      ) match {
+        case None => None
+      }
     assert(actual == None)
   }
 
@@ -136,7 +139,9 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
-      )
+      ) match {
+        case None => None
+      }
     assert(actual == None)
   }
 
@@ -154,13 +159,17 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
+    val struct: StructType = StructType(Seq(StructField("chromosome", ArrayType(LongType, false), true)))
+
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 2,
         popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 1
-      )
+      ) match {
+        case Some(x) => Some(spark.createDataFrame(x, struct))
+      }
 
 
     assert(CoreSpark.hashed_dataframe(actual.get) == 2015914712)
@@ -180,13 +189,17 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         sparkSession = spark
       )
 
+    val struct: StructType = StructType(Seq(StructField("chromosome", ArrayType(LongType, false), true)))
+
     val actual: Option[DataFrame] =
       p.tournamentSelection(
         nbrOfParents = 10,
         popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 5
-      )
+      ) match {
+        case Some(x) => Some(spark.createDataFrame(x, struct))
+      }
 
     assert(CoreSpark.hashed_dataframe(actual.get) == 181090392)
   }

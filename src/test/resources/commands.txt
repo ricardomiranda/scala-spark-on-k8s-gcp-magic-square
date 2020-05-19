@@ -1,22 +1,10 @@
 gcloud dataproc jobs submit spark \
   --cluster hsbc-dev-dataproc-opsml \
   --class com.ricardomiranda.magicsquare.Main \
-  --files=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_04_pop_50.json \
+  --files=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_03_pop_100.json \
   --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.11.jar,/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
   --region=europe-west2 \
   -- \
     -n magic_square \
-    -m magic_square_size_04_pop_50.json \
-    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev
-
-
-gcloud dataproc jobs submit spark \
-  --cluster hsbc-dev-dataproc-opsml \
-  --class com.ricardomiranda.magicsquare.Main \
-  --files=/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/src/test/resources/magic_square_size_02_pop_10.json \
-  --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.11.jar,/Volumes/Work/projects/scala-spark-on-k8s-gcp-magic-square/target/scala-2.11/spark-on-k8s-magic-squares.jar \
-  --region=europe-west2 \
-  -- \
-    -n magic_square \
-    -m magic_square_size_02_pop_10.json \
-    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev
+    -m magic_square_size_03_pop_100.json \
+    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev,spark.cleaner.referenceTracking.cleanCheckpoints=true
