@@ -1,14 +1,14 @@
 {
   "crossoverRate": 0.95,
   "elite": 5,
-  "iter": 24,
+  "iter": 2,
   "mutationRate": 0.05,
   "percentile": 0.10,
   "persistence": {
     "gcp_dataset": "magic_squares",
     "table": "results"
   },
-  "popSize": 100,
+  "popSize": 200,
   "sideSize": 3,
   "tournamentSize": 4
 }

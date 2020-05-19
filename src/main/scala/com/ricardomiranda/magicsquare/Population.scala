@@ -5,12 +5,12 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{sum, udf}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 import scala.collection.mutable.WrappedArray
 import scala.util.Random
 
-case class Population(individuals: DataFrame, sparkSession: SparkSession)
+case class Population(checkpointDir: String, individuals: Dataset[Row], sparkSession: SparkSession)
   extends StrictLogging {
 
   /**
@@ -51,12 +51,6 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
                      tournamentSize: Int
                    ): Population = {
 
-    // Checkpointing Population to reduce DAG
-    this.individuals.cache()
-    //    val checkpointDir: String = "/tmp/checkpoints"
-    //    sparkSession.sparkContext.setCheckpointDir(checkpointDir)
-    //    val checkPointedPopulation: Dataset[Row] =  this.individuals.checkpoint(eager = true)
-
     val elitePopulation: DataFrame = this.individuals.orderBy("fitness").limit(elite)
 
     val offspringPopulation: DataFrame = (popSize - elite) match {
@@ -81,8 +75,14 @@ case class Population(individuals: DataFrame, sparkSession: SparkSession)
         )
     }
 
-    this.individuals.unpersist()
-    this.copy(individuals = offspringPopulation.union(elitePopulation))
+    val checkpointedPopulation: Dataset[Row] =
+      Population
+        .checkpointingPopulation(
+          checkpointDir = this.checkpointDir,
+          individuals = offspringPopulation.union(elitePopulation),
+          sparkSession = sparkSession
+        )
+    this.copy(individuals = checkpointedPopulation)
   }
 
   /**
@@ -250,6 +250,7 @@ object Population {
     * @return Population
     */
   def apply(
+             checkpointDir: String = "gs://hsbc-dataproc-temporary-bucket-dev/checkpoints",
              chromosomeSize: Long,
              populationSize: Int,
              randomGenerator: Random = new Random,
@@ -266,11 +267,31 @@ object Population {
         )
         .map(i => (i.chromosome.value, i.fitness))
 
+    val checkpointedPopulation =
+      checkpointingPopulation(checkpointDir = checkpointDir,
+        individuals =
+          sparkSession
+            .createDataFrame(is)
+            .toDF("chromosome", "fitness"),
+        sparkSession = sparkSession
+      )
+
     new Population(
-      individuals = sparkSession
-        .createDataFrame(is)
-        .toDF("chromosome", "fitness"),
+      checkpointDir = checkpointDir,
+      individuals = checkpointedPopulation,
       sparkSession = sparkSession
     )
+  }
+
+  /** Checkpointing population to break DAGs */
+  def checkpointingPopulation(
+                               checkpointDir: String,
+                               individuals: DataFrame,
+                               sparkSession: SparkSession
+                             ): Dataset[Row] = {
+
+    individuals.cache()
+    sparkSession.sparkContext.setCheckpointDir(checkpointDir)
+    individuals.checkpoint(eager = true)
   }
 }

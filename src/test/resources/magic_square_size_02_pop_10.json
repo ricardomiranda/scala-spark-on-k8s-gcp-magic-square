@@ -1,7 +1,7 @@
 {
   "crossoverRate": 0.95,
   "elite": 5,
-  "iter": 8,
+  "iter": 6,
   "mutationRate": 0.05,
   "percentile": 0.20,
   "persistence": {

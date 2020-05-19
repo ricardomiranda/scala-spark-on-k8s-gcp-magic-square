@@ -11,6 +11,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "empty dataframe") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 0,
         randomGenerator = new Random(0),
@@ -23,6 +24,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "size one dataframe") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 1,
         randomGenerator = new Random(0),
@@ -35,6 +37,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "Check contents of population DF") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 10,
         randomGenerator = new Random(0),
@@ -51,6 +54,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -67,6 +71,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -83,6 +88,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -99,6 +105,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -115,6 +122,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -139,6 +147,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -165,6 +174,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -195,6 +205,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -219,6 +230,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "Fitest individual of Population with size 0") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 0,
         randomGenerator = new Random(0),
@@ -234,6 +246,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "Fitest individual of Population with size 1") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 1,
         randomGenerator = new Random(0),
@@ -249,6 +262,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   test(testName = "Fitest individual of Population with size 100") {
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = 100,
         randomGenerator = new Random(0),
@@ -267,6 +281,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -289,6 +304,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -311,6 +327,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -336,6 +353,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 9,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -359,6 +377,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -390,6 +409,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 9,
         populationSize = popSize.toInt,
         randomGenerator = new Random(0),
@@ -421,6 +441,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 4,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -453,6 +474,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 9,
         populationSize = popSize,
         randomGenerator = new Random(0),
@@ -478,6 +500,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
 
     val p: Population =
       Population(
+        checkpointDir = "/tmp/checkpoints",
         chromosomeSize = 9,
         populationSize = popSize,
         randomGenerator = new Random(0),
