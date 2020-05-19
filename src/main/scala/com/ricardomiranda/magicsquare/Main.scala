@@ -12,12 +12,12 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import scala.annotation.tailrec
 
 case class Result(
-    bestIndividualChromosome: Seq[Long],
-    fitness: Long,
-    lineNbr: Int,
-    populationFitness: Double,
-    runID: String
-)
+                   bestIndividualChromosome: Seq[Long],
+                   fitness: Long,
+                   lineNbr: Int,
+                   populationFitness: Double,
+                   runID: String
+                 )
 
 object Main extends App with StrictLogging {
 
@@ -27,7 +27,7 @@ object Main extends App with StrictLogging {
   val arguments: ArgumentParser =
     ArgumentParser.parser.parse(args, ArgumentParser()) match {
       case Some(config) => config
-      case None         => throw new IllegalArgumentException()
+      case None => throw new IllegalArgumentException()
     }
 
   logger.info("All input arguments were correctly parsed")
@@ -68,7 +68,7 @@ object Main extends App with StrictLogging {
     fitness = b.get._2,
     lineNbr = 0,
     populationFitness = iniPopulation
-      .populationFitness(percentile = magicSquareConfigs.percentile)
+      .populationFitness(percentile = magicSquareConfigs.percentile, popSize = magicSquareConfigs.popSize)
       .get,
     runID = runID
   )
@@ -86,7 +86,7 @@ object Main extends App with StrictLogging {
   Computation.finalOutput(
     magicSquareConfigs = magicSquareConfigs,
     results = results,
-    runID= runID,
+    runID = runID,
     sparkSession = sparkSession
   )
 
@@ -107,9 +107,9 @@ case object Computation extends StrictLogging {
     * @return The file path of the file in the Spark session.
     */
   def addFileToSparkContext(
-      filePath: String,
-      sparkSession: SparkSession
-  ): String = {
+                             filePath: String,
+                             sparkSession: SparkSession
+                           ): String = {
     logger.info(s"Add file ${filePath} to Spark Session")
 
     sparkSession.sparkContext.addFile(filePath)
@@ -131,9 +131,9 @@ case object Computation extends StrictLogging {
     * @return a configured spark session.
     */
   def createSparkSession(
-      configs: Map[String, String],
-      sparkAppName: String
-  ): SparkSession = {
+                          configs: Map[String, String],
+                          sparkAppName: String
+                        ): SparkSession = {
     logger.info(s"Creating Spark Session with name $sparkAppName")
 
     val builder =
@@ -149,14 +149,14 @@ case object Computation extends StrictLogging {
   /**
     * Print final program results
     *
-    * @param results  Sequence o Results stroed during the computation
+    * @param results Sequence o Results stroed during the computation
     */
   def finalOutput(
-      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
-      results: Seq[Result],
-      runID: String,
-      sparkSession: SparkSession
-  ): Unit = {
+                   magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
+                   results: Seq[Result],
+                   runID: String,
+                   sparkSession: SparkSession
+                 ): Unit = {
     logger.info(s"Writing results for run: ${runID}")
     import sparkSession.implicits._
     val df: DataFrame = results.toDF
@@ -176,13 +176,13 @@ case object Computation extends StrictLogging {
     */
   @tailrec
   def loop(
-      acc: Seq[Result],
-      iterToGo: Int,
-      n: Int,
-      magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
-      population: Population,
-      runID: String
-  ): Seq[Result] = iterToGo match {
+            acc: Seq[Result],
+            iterToGo: Int,
+            n: Int,
+            magicSquareConfigs: MagicSquareJsonSupport.MagicSquareConfiguration,
+            population: Population,
+            runID: String
+          ): Seq[Result] = iterToGo match {
 
     case 0 => acc
     case _ =>
@@ -192,6 +192,7 @@ case object Computation extends StrictLogging {
             crossoverRate = magicSquareConfigs.crossoverRate,
             elite = magicSquareConfigs.elite,
             mutationRate = magicSquareConfigs.mutationRate,
+            popSize = magicSquareConfigs.popSize,
             tournamentSize = magicSquareConfigs.tournamentSize
           )
 
@@ -202,7 +203,7 @@ case object Computation extends StrictLogging {
           fitness = b.get._2,
           lineNbr = n,
           populationFitness = newGeneration
-            .populationFitness(percentile = magicSquareConfigs.percentile)
+            .populationFitness(percentile = magicSquareConfigs.percentile, popSize = magicSquareConfigs.popSize)
             .get,
           runID = runID
         )
@@ -211,8 +212,12 @@ case object Computation extends StrictLogging {
       // of iterations
       loop(
         acc = result +: acc,
-        iterToGo = if (b.get._2 <= 0) { 0 }
-        else { iterToGo - 1 },
+        iterToGo = if (b.get._2 <= 0) {
+          0
+        }
+        else {
+          iterToGo - 1
+        },
         n = n + 1,
         magicSquareConfigs = magicSquareConfigs,
         population = newGeneration,

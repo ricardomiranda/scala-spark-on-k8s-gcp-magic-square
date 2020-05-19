@@ -46,54 +46,66 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Fitness of Population with size 0") {
+
+    val popSize: Int = 0
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 0,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10, popSize = popSize)
     assert(expected == None)
   }
 
   test(testName = "Fitness of Population with size 1") {
+
+    val popSize: Int = 1
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 1,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10,popSize = popSize)
     assert(expected == Some(25.0))
   }
 
   test(testName = "Fitness of Population with size 10 using percentile 0.05") {
+
+    val popSize: Int = 10
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 10,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val expected: Option[Double] = p.populationFitness(percentile = 0.05)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.05, popSize = popSize)
     assert(expected == Some(22.0))
   }
 
   test(testName = "Fitness of Population with size 10 using percentile 0.10") {
+
+    val popSize: Int = 10
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 10,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val expected: Option[Double] = p.populationFitness(percentile = 0.10)
+    val expected: Option[Double] = p.populationFitness(percentile = 0.10, popSize = popSize)
     assert(expected == Some(23.5))
   }
 
@@ -404,21 +416,26 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Generate a new generation of 2 with 0 offspring") {
+
+    val popSize: Int = 2
+
     val p: Population =
       Population(
         chromosomeSize = 4,
-        populationSize = 2,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val actual: Population = p.newGeneration(
-      crossoverRate = 0.0,
-      elite = 2,
-      mutationRate = 0.05,
-      randomGenerator = new Random(0),
-      tournamentSize = 2
-    )
+    val actual: Population =
+      p.newGeneration(
+        crossoverRate = 0.0,
+        elite = 2,
+        mutationRate = 0.05,
+        popSize = popSize,
+        randomGenerator = new Random(0),
+        tournamentSize = 2
+      )
 
     assert(
       CoreSpark.hashed_dataframe(
@@ -431,10 +448,13 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Generate a new generation of 4 with 2 offspring") {
+
+    val popSize: Int = 4
+
     val p: Population =
       Population(
         chromosomeSize = 9,
-        populationSize = 4,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
@@ -444,6 +464,7 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
         crossoverRate = 1.0,
         elite = 2,
         mutationRate = 0.05,
+        popSize = popSize,
         randomGenerator = new Random(0),
         tournamentSize = 2
       )
@@ -452,21 +473,26 @@ class PopulationTest extends funsuite.AnyFunSuite with DataFrameSuiteBase {
   }
 
   test(testName = "Generate a new generation of 200 with 195 offspring") {
+
+    val popSize: Int = 200
+
     val p: Population =
       Population(
         chromosomeSize = 9,
-        populationSize = 200,
+        populationSize = popSize,
         randomGenerator = new Random(0),
         sparkSession = spark
       )
 
-    val actual: Population = p.newGeneration(
-      crossoverRate = 1.0,
-      elite = 5,
-      mutationRate = 0.05,
-      randomGenerator = new Random(0),
-      tournamentSize = 5
-    )
+    val actual: Population =
+      p.newGeneration(
+        crossoverRate = 1.0,
+        elite = 5,
+        mutationRate = 0.05,
+        popSize = popSize,
+        randomGenerator = new Random(0),
+        tournamentSize = 5
+      )
 
     assert(actual.individuals.count() == 200L)
   }

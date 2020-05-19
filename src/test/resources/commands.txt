@@ -7,4 +7,4 @@ gcloud dataproc jobs submit spark \
   -- \
     -n magic_square \
     -m magic_square_size_03_pop_100.json \
-    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev,spark.cleaner.referenceTracking.cleanCheckpoints=true
+    -c temporaryGcsBucket=hsbc-dataproc-temporary-bucket-dev spark.cleaner.referenceTracking.cleanCheckpoints=true
